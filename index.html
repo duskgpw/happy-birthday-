@@ -2,22 +2,20 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
 <title>送给白若浠的生日惊喜</title>
 <style>
   *{margin:0;padding:0;box-sizing:border-box}
-  /* 更加深邃浓郁的初音宇宙星河渐变 */
   body{
     width:100vw;
     height:100vh;
     overflow:hidden;
     background: radial-gradient(circle at 50% 50%, #031b20 0%, #060a17 60%, #010307 100%);
-    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
     user-select:none;
     -webkit-tap-highlight-color:transparent;
   }
   
-  /* 保持4K清晰度抗锯齿的画布样式 */
   canvas{
     position:absolute;
     inset:0;
@@ -28,7 +26,6 @@
   }
   #bgCanvas{z-index:1} #fxCanvas{z-index:25}
   
-  /* 柔和的边缘暗角，突出中央 */
   body::after {
     content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 99;
     box-shadow: inset 0 0 120px rgba(0,0,0,0.9);
@@ -36,48 +33,89 @@
 
   .scanline{position:absolute;inset:0;z-index:5;background:linear-gradient(to bottom, transparent 50%, rgba(57,197,187,0.02) 51%, transparent 100%);background-size:100% 4px;pointer-events:none;}
 
-  /* 初始UI */
+  /* 初始UI手机端自适应 */
   #startScreen{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:10;transition:opacity 0.8s ease;cursor:pointer;}
-  .miku-01{position:absolute;top:-10px;left:0px;font-size:180px;font-weight:900;font-style:italic;color:rgba(57,197,187,0.04);z-index:0;pointer-events:none;}
-  .mikuLogo{position:relative;z-index:10;font-size:20px;font-weight:800;letter-spacing:3px;color:#39c5bb;text-shadow:0 0 8px #39c5bb;animation:breathe 3s ease-in-out infinite;margin-bottom:20px;}
-  .cakeWrap{position:relative;width:240px;height:240px;display:flex;align-items:center;justify-content:center;z-index:10;}
-  .radar{position:absolute;width:200px;height:200px;border:1px dashed rgba(57,197,187,0.3);border-radius:50%;animation:spin 18s linear infinite;}
-  .cake{position:relative;width:120px;height:120px;animation:floaty 4.5s ease-in-out infinite;}
-  .cake::after{content:'🎂';font-size:70px;position:absolute;top:20px;left:25px;filter:drop-shadow(0 0 8px rgba(57,197,187,0.4));}
-  .tip{position:relative;z-index:10;margin-top:20px;font-size:13px;color:#b8fff8;letter-spacing:2px;animation:breathe 2.5s ease-in-out infinite;}
+  .miku-01{position:absolute;top:-10px;left:0px;font-size:clamp(100px, 20vw, 180px);font-weight:900;font-style:italic;color:rgba(57,197,187,0.04);z-index:0;pointer-events:none;}
+  .mikuLogo{position:relative;z-index:10;font-size:clamp(14px, 4vw, 20px);font-weight:800;letter-spacing:3px;color:#39c5bb;text-shadow:0 0 8px #39c5bb;animation:breathe 3s ease-in-out infinite;margin-bottom:20px;}
+  .cakeWrap{position:relative;width:clamp(160px, 45vw, 240px);height:clamp(160px, 45vw, 240px);display:flex;align-items:center;justify-content:center;z-index:10;}
+  .radar{position:absolute;width:90%;height:90%;border:1px dashed rgba(57,197,187,0.3);border-radius:50%;animation:spin 18s linear infinite;}
+  .cake{position:relative;width:60%;height:60%;animation:floaty 4.5s ease-in-out infinite;display:flex;align-items:center;justify-content:center;}
+  .cake::after{content:'🎂';font-size:clamp(50px, 12vw, 70px);filter:drop-shadow(0 0 8px rgba(57,197,187,0.4));}
+  .tip{position:relative;z-index:10;margin-top:20px;font-size:clamp(11px, 3vw, 13px);color:#b8fff8;letter-spacing:2px;animation:breathe 2.5s ease-in-out infinite;}
 
   /* 满铺弹窗 */
   #popupLayer{position:absolute;inset:0;z-index:20;pointer-events:none;}
-  .popup{position:absolute;padding:8px 14px;font-size:12px;font-weight:700;color:#fff;background:rgba(6,18,26,.95);border:1px solid rgba(57,197,187,0.6);border-radius:8px;box-shadow:0 0 10px rgba(57,197,187,.2);transform:scale(0);opacity:0;transition:all .5s cubic-bezier(0.18, 0.89, 0.32, 1.28);white-space:nowrap;}
-  .popup.pink{border-color:rgba(255,125,178,0.6);box-shadow:0 0 10px rgba(255,125,178,.2);}
-  .popup.gold{border-color:rgba(255,230,0,0.6);box-shadow:0 0 10px rgba(255,230,0,.2);color:#ffe600;}
+  .popup{
+    position:absolute;
+    padding:6px 12px;
+    font-size:clamp(10px, 2.5vw, 12px);
+    font-weight:800;
+    color:#fff;
+    background:rgba(4, 12, 18, 0.96);
+    border:1.5px solid #39c5bb;
+    border-radius:8px;
+    box-shadow:0 0 12px rgba(57,197,187,0.45);
+    transform:scale(0);
+    opacity:0;
+    transition:all .4s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+    white-space:nowrap;
+    backdrop-filter: blur(1.5px);
+  }
+  .popup.pink{border-color:#ff7db2;box-shadow:0 0 12px rgba(255,125,178,0.45);}
+  .popup.gold{border-color:#ffe600;box-shadow:0 0 12px rgba(255,230,0,0.5);color:#ffe600;}
   .popup.show{transform:scale(1);opacity:1}
   .popup.hide{transform:scale(0.5);opacity:0;}
 
-  /* 核心文字层 - 增强对比度，突出主体 */
+  /* 核心文字层 */
   #textLayer{position:absolute;inset:0;display:flex;justify-content:center;align-items:center;z-index:30;pointer-events:none;text-align:center;}
   
-  /* 中央暗化遮罩，当显示文字时，压暗中心背景 */
   .text-mask {
     position: absolute; inset: 0; 
-    background: radial-gradient(circle, rgba(2,6,15,0.92) 0%, rgba(2,6,15,0) 75%);
+    background: radial-gradient(circle, rgba(2,6,15,0.96) 0%, rgba(2,6,15,0.55) 60%, rgba(2,6,15,0) 100%);
     opacity: 0; transition: opacity 0.8s ease; z-index: -1;
   }
   .text-mask.active { opacity: 1; }
 
-  .mainText{position:absolute;width:100%;padding:0 20px;opacity:0;transform:scale(0.95);transition:all 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);}
+  .mainText{position:absolute;width:100%;padding:0 24px;opacity:0;transform:scale(0.95);transition:all 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);}
   .mainText.show{opacity:1;transform:scale(1);}
   
-  .name{font-size:52px;color:#39c5bb;font-weight:900;letter-spacing:5px;margin-bottom:15px;text-shadow:0 0 20px rgba(57,197,187,0.9), 0 0 35px rgba(57,197,187,0.4);font-family:monospace;}
-  .wish{font-size:24px;color:#fff;line-height:1.6;text-shadow:0 0 12px rgba(255,125,178,0.9), 0 0 20px rgba(255,125,178,0.4);font-family:monospace;}
-  .subwish{margin-top:12px;font-size:19px;color:#ccfffb;text-shadow:0 0 8px rgba(57,197,187,0.5);font-family:monospace;}
+  .name{font-size:clamp(32px, 8vw, 52px);color:#39c5bb;font-weight:900;letter-spacing:5px;margin-bottom:15px;text-shadow:0 0 20px rgba(57,197,187,0.9), 0 0 35px rgba(57,197,187,0.4);font-family:monospace;}
+  .wish{font-size:clamp(16px, 4.2vw, 24px);color:#fff;line-height:1.6;text-shadow:0 0 12px rgba(255,125,178,0.9), 0 0 20px rgba(255,125,178,0.4);font-family:monospace;word-break:break-all;}
+  .subwish{margin-top:12px;font-size:clamp(13px, 3.5vw, 19px);color:#ccfffb;text-shadow:0 0 8px rgba(57,197,187,0.5);font-family:monospace;}
   .cursor::after{content:'_';animation:blink 1s step-end infinite;color:#39c5bb;}
 
-  /* 控件 */
-  #musicBtn{position:absolute;right:20px;bottom:20px;width:50px;height:50px;z-index:50;border-radius:50%;border:1px solid #39c5bb;background:rgba(8,25,36,.8);display:flex;align-items:center;justify-content:center;cursor:pointer;}
-  .disc{width:36px;height:36px;border-radius:50%;background:radial-gradient(circle, #39c5bb 15%, #0d1827 16%, #0d1827 80%, #ff7db2 81%);}
-  #musicBtn.playing .disc{animation:spin 4s linear infinite}
-  #restartBtn{position:absolute;left:50%;bottom:40px;transform:translateX(-50%);z-index:40;padding:12px 28px;border-radius:30px;background:rgba(8,25,36,.85);border:1px solid #39c5bb;color:#fff;font-size:15px;font-weight:bold;cursor:pointer;display:none;letter-spacing:2px;box-shadow:0 0 20px rgba(57,197,187,.5);}
+  /* 音乐控制按钮重构 - 适配初音未来黑胶转盘 */
+  #musicBtn{
+    position:absolute;
+    right:16px;
+    bottom:16px;
+    width:56px;
+    height:56px;
+    z-index:50;
+    border-radius:50%;
+    border:1.5px solid #39c5bb;
+    background:rgba(8,25,36,.85);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    box-shadow: 0 0 10px rgba(57,197,187,0.3);
+    overflow:visible;
+  }
+  .miku-svg{
+    width:105%;
+    height:105%;
+    overflow:visible;
+  }
+  .spinning-part {
+    transform-origin: 30px 38px; /* 围绕黑胶中心旋转 */
+    transition: transform 0.5s ease;
+  }
+  #musicBtn.playing .spinning-part {
+    animation:spin 4s linear infinite;
+  }
+  
+  #restartBtn{position:absolute;left:50%;bottom:clamp(30px, 8vh, 50px);transform:translateX(-50%);z-index:40;padding:10px 24px;border-radius:30px;background:rgba(8,25,36,.85);border:1px solid #39c5bb;color:#fff;font-size:14px;font-weight:bold;cursor:pointer;display:none;letter-spacing:2px;box-shadow:0 0 20px rgba(57,197,187,.5);white-space:nowrap;}
   #restartBtn.show{display:block;}
 
   @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
@@ -117,7 +155,59 @@
       </div>
     </div>
 
-    <div id="musicBtn" onclick="toggleMusic(event)"><div class="disc"></div></div>
+    <!-- 音乐唱片初音未来玩偶控件 -->
+    <div id="musicBtn" onclick="toggleMusic(event)">
+      <svg viewBox="0 0 60 60" class="miku-svg">
+        <g class="spinning-part">
+          <!-- 唱片舞台 (Disc Base) -->
+          <circle cx="30" cy="38" r="18" fill="#0d1117" stroke="#39c5bb" stroke-width="1.2" />
+          <circle cx="30" cy="38" r="14" fill="none" stroke="#1f2937" stroke-width="0.8" />
+          <circle cx="30" cy="38" r="10" fill="none" stroke="#374151" stroke-width="0.8" />
+          <circle cx="30" cy="38" r="6" fill="#ff7db2" />
+          <circle cx="30" cy="38" r="2.2" fill="#0d1117" />
+          
+          <!-- 初音玩偶 (Chibi Miku Doll) -->
+          <!-- 左马尾 -->
+          <path d="M21 14 C13 10, 11 25, 14 29 C17 33, 21 25, 21 21 Z" fill="#39c5bb" />
+          <path d="M21 14 C14 12, 13 23, 16 26 Z" fill="#72efe7" opacity="0.6"/>
+          <!-- 右马尾 -->
+          <path d="M39 14 C47 10, 49 25, 46 29 C43 33, 39 25, 39 21 Z" fill="#39c5bb" />
+          <path d="M39 14 C46 12, 47 23, 44 26 Z" fill="#72efe7" opacity="0.6"/>
+          <!-- 发饰红丝带 -->
+          <rect x="18" y="15" width="3" height="1.5" fill="#ff4b72" transform="rotate(-20 19 16)"/>
+          <rect x="38" y="15" width="3" height="1.5" fill="#ff4b72" transform="rotate(20 39 16)"/>
+          <!-- 衣服与裙子 -->
+          <path d="M27 25 L33 25 L31 33 L29 33 Z" fill="#3a3d40" />
+          <path d="M26 33 L34 33 L35 36 L25 36 Z" fill="#1e2022" />
+          <!-- 领带 -->
+          <line x1="30" y1="25" x2="30" y2="31" stroke="#39c5bb" stroke-width="1.2" />
+          <!-- 双脚 -->
+          <path d="M28 36 L28 38 L27 38 Z M32 36 L32 38 L33 38 Z" stroke="#3a3d40" stroke-width="1"/>
+          <!-- 双臂与袖套 -->
+          <path d="M27 25 C24 27, 24 31, 26 33" stroke="#3a3d40" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+          <path d="M33 25 C36 27, 36 31, 34 33" stroke="#3a3d40" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+          <path d="M26 28 C25 30, 25 31, 25 32 M34 28 C35 30, 35 31, 35 32" stroke="#39c5bb" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+          <!-- 头部脸蛋 -->
+          <circle cx="30" cy="17" r="6" fill="#ffe2d1" />
+          <!-- 眼睛 -->
+          <ellipse cx="28" cy="17.5" rx="0.9" ry="1.4" fill="#39c5bb" />
+          <ellipse cx="32" cy="17.5" rx="0.9" ry="1.4" fill="#39c5bb" />
+          <circle cx="27.8" cy="17" r="0.3" fill="#fff" />
+          <circle cx="31.8" cy="17" r="0.3" fill="#fff" />
+          <!-- 腮红与小嘴 -->
+          <ellipse cx="27" cy="19" rx="0.9" ry="0.5" fill="#ff7db2" opacity="0.5"/>
+          <ellipse cx="33" cy="19" rx="0.9" ry="0.5" fill="#ff7db2" opacity="0.5"/>
+          <path d="M29.6 19.4 Q30 20 30.4 19.4" stroke="#ff7db2" stroke-width="0.8" fill="none" stroke-linecap="round"/>
+          <!-- 刘海与头发 -->
+          <path d="M24 17 C24 10, 36 10, 36 17 Z" fill="#39c5bb" />
+          <path d="M24 15 C26 12, 34 12, 36 15 C33 13.5, 27 13.5, 24 15 Z" fill="#39c5bb" />
+          <path d="M25 14 L27 18 L28 14" fill="#39c5bb"/>
+          <path d="M30 14 L30 17 L31 14" fill="#39c5bb"/>
+          <path d="M35 14 L33 18 L32 14" fill="#39c5bb"/>
+        </g>
+      </svg>
+    </div>
+    
     <button id="restartBtn" onclick="location.reload()">再看一次</button>
     <audio id="bgm" loop src="https://music.163.com/song/media/outer/url?id=1359356908.mp3"></audio>
   </div>
@@ -127,13 +217,12 @@
     const fxCanvas = document.getElementById('fxCanvas'), fxCtx = fxCanvas.getContext('2d');
     const bgm = document.getElementById('bgm');
     
-    let w, h, dpr = 1;
+    let w, h, dpr = 1, isMobile = false;
     let bgParticles = [], bgStars = [], bgBubbles = [], bgNebulas = [], bgMeteors = [];
     let rockets = [], particles = [], flashes = [], textFxs = [], isStarted = false;
     
     const colors = ['#39c5bb', '#ff7db2', '#72efe7', '#ff9ec4', '#ffffff', '#ffd8e6', '#ffe600', '#a3e5ff'];
     
-    // 祝福语库
     const msgs = [
       "🎉 祝白若浠生日快乐！", "✨ 愿你眼里有光，心中有爱", "🎂 岁岁常欢愉，年年皆胜意", "🌟 祝你新的一岁：明朗、自由",
       "🎈 愿所有美好与你不期而遇", "💫 愿你所得皆所愿，所行化坦途", "🌸 祝最可爱的白若浠生日大吉", "🧁 保持少女心，永远热爱生活",
@@ -146,16 +235,14 @@
       "🧁 愿你每一天都像过生日一样甜", "🌻 愿你知足且上进，温柔且坚定", "💫 愿你往后余生，只有欢笑没有泪水", "🍀 愿你三冬暖，愿你春不寒"
     ];
 
-    // 精确获取拱形银河轨迹的高度 (曲线更深，从左右下角升起跨过星空)
     function getArchY(x) {
       const normX = x / w;
-      return h * 0.78 - Math.sin(normX * Math.PI) * (h * 0.58);
+      return h * 0.78 - Math.sin(normX * Math.PI) * (h * 0.55);
     }
 
-    // 完美契合图片：以屏幕上方偏外为圆心，滑落优美向下弯曲的广角流星
     function createCurvedMeteor(randomizeAngle = false) {
-      const cx = w * 0.5;                // 旋转圆心在顶部中央
-      const cy = -h * 0.4;               // 位于屏幕上方外侧
+      const cx = w * 0.5;
+      const cy = -h * 0.4;
       const minR = h * 0.65;
       const maxR = h * 1.8;
       const r = minR + Math.random() * (maxR - minR); 
@@ -169,36 +256,33 @@
         startAngle = isLeft ? Math.PI*0.1 : Math.PI*0.9;
       }
       
-      const speed = 0.003 + Math.random() * 0.005;
-      const angularDir = isLeft ? speed : -speed; // 分别朝左右外侧旋转划落
+      const speed = 0.0035 + Math.random() * 0.0055;
+      const angularDir = isLeft ? speed : -speed;
 
-      // 照片中的流星色彩：极光绿、冷白、淡粉、金黄微光
       const meteorColors = [
-        'rgba(57, 197, 187, 0.65)', 
-        'rgba(255, 255, 255, 0.85)', 
-        'rgba(255, 125, 178, 0.5)', 
-        'rgba(255, 220, 80, 0.55)'
+        'rgba(57, 197, 187, 0.8)', 
+        'rgba(255, 255, 255, 0.95)', 
+        'rgba(255, 125, 178, 0.7)', 
+        'rgba(255, 230, 50, 0.75)'
       ];
 
       return {
         cx, cy, r,
         angle: startAngle,
         angularSpeed: angularDir,
-        width: 0.7 + Math.random() * 1.5,
-        trailLength: 0.14 + Math.random() * 0.18, 
+        width: 1.0 + Math.random() * 2.0, 
+        trailLength: 0.16 + Math.random() * 0.18, 
         color: meteorColors[Math.floor(Math.random() * meteorColors.length)]
       };
     }
 
-    // 4K超高清视网膜重构自适应
     function resize() {
       const cssW = window.innerWidth;
       const cssH = window.innerHeight;
+      isMobile = cssW < 768;
       
-      // 计算设备像素比，在标准屏上强制最少采用2倍超级采样以模拟4K，高清屏上最高取3倍
-      dpr = Math.min(Math.max(window.devicePixelRatio || 1, 2), 3);
+      dpr = Math.min(window.devicePixelRatio || 1, isMobile ? 1.5 : 2.0);
       
-      // 设置物理像素高分辨率
       bgCanvas.width = cssW * dpr;
       bgCanvas.height = cssH * dpr;
       bgCanvas.style.width = cssW + 'px';
@@ -212,57 +296,51 @@
       w = cssW;
       h = cssH;
       
-      // 矩阵坐标映射转换，使所有后续的画笔操作无需修改坐标便能达到物理4K级别精细度
       bgCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
       fxCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
       
       bgParticles = []; bgStars = []; bgBubbles = []; bgNebulas = []; bgMeteors = [];
       
-      // 1. 初始化多重纹理银河星云
-      const isMobile = w < 768;
-      const step = isMobile ? 120 : 70;
+      const step = isMobile ? 130 : 70;
+      const starCount = isMobile ? 180 : 380;
+      const bubbleCount = isMobile ? 4 : 10;
       
       for(let x = -100; x < w + 100; x += step) {
         let archY = getArchY(x);
         let randOffset = (Math.random() - 0.5) * 80;
         
-        let col = 'rgba(57, 197, 187, 0.09)'; // 默认初音绿
-        let size = (160 + Math.random() * 150) * (isMobile ? 0.75 : 1);
+        let col = 'rgba(57, 197, 187, 0.13)'; 
+        let size = (160 + Math.random() * 150) * (isMobile ? 0.7 : 1);
         
-        // 银河中心核(右半边)
         if(x > w * 0.6) {
-          col = Math.random() > 0.4 ? 'rgba(255, 130, 90, 0.18)' : 'rgba(255, 90, 140, 0.15)';
+          col = Math.random() > 0.4 ? 'rgba(255, 130, 90, 0.24)' : 'rgba(255, 90, 140, 0.2)';
           size *= 1.3;
         } else if(x > w * 0.35 && x <= w * 0.6) {
-          col = 'rgba(170, 70, 220, 0.13)';
+          col = 'rgba(170, 70, 220, 0.18)';
         }
 
         bgNebulas.push({
-          x: x, 
-          y: archY + randOffset, 
-          r: size, 
-          vx: (Math.random() - 0.5)*0.03, 
-          vy: (Math.random() - 0.5)*0.03, 
+          x: x, y: archY + randOffset, r: size, 
+          vx: (Math.random() - 0.5)*0.03, vy: (Math.random() - 0.5)*0.03, 
           c: col
         });
       }
 
-      // 2. 背景浮动的音符与“01”字符
       const notes = ['♪', '♫', '♬', '01'];
-      for(let i=0; i<28; i++) {
+      const noteCount = isMobile ? 12 : 28;
+      for(let i=0; i<noteCount; i++) {
         bgParticles.push({
           x: Math.random()*w, y: Math.random()*h,
           text: notes[Math.floor(Math.random() * notes.length)],
-          s: 11 + Math.random()*9,
+          s: 10 + Math.random()*8,
           vy: 0.08 + Math.random()*0.15,
-          c: Math.random()>0.5 ? 'rgba(57,197,187,0.1)' : 'rgba(255,125,178,0.06)'
+          c: Math.random()>0.5 ? 'rgba(57,197,187,0.12)' : 'rgba(255,125,178,0.08)'
         });
       }
       
-      // 3. 璀璨星空群星
-      for(let i=0; i<480; i++) {
-        let isFlare = Math.random() > 0.95;
-        let isArchStar = Math.random() > 0.18; 
+      for(let i=0; i<starCount; i++) {
+        let isFlare = Math.random() > 0.96;
+        let isArchStar = Math.random() > 0.25; 
         
         let starX = Math.random() * w;
         let starY;
@@ -271,169 +349,160 @@
           let dev = (Math.random() + Math.random() + Math.random() - 1.5) * 80;
           starY = getArchY(starX) + dev;
         } else {
-          starY = Math.random() * h * 0.85; 
+          starY = Math.random() * h * 0.8; 
         }
 
         bgStars.push({
           x: starX, y: starY,
-          size: isFlare ? 1.5 + Math.random()*1.0 : 0.3 + Math.random()*1.2,
+          size: isFlare ? 1.5 + Math.random()*0.8 : 0.4 + Math.random()*1.0,
           color: colors[Math.floor(Math.random()*colors.length)],
           alpha: Math.random(),
-          speed: 0.004 + Math.random()*0.012,
+          speed: 0.005 + Math.random()*0.012,
           type: isFlare ? 'flare' : 'normal'
         });
       }
 
-      // 4. 初始化广角同心流星 (共8颗)
-      for(let i=0; i<8; i++) {
+      const meteorCount = isMobile ? 4 : 8;
+      for(let i=0; i<meteorCount; i++) {
         bgMeteors.push(createCurvedMeteor(true));
       }
 
-      // 5. 背景深空慢速虚化大光晕
-      for(let i=0; i<10; i++) {
+      for(let i=0; i<bubbleCount; i++) {
         bgBubbles.push({
           x: Math.random()*w, y: h + Math.random()*100,
-          r: 20 + Math.random()*30,
+          r: 15 + Math.random()*25,
           vy: 0.12 + Math.random()*0.22,
-          color: Math.random() > 0.5 ? 'rgba(57,197,187,0.02)' : 'rgba(255,125,178,0.02)'
+          color: Math.random() > 0.5 ? 'rgba(57,197,187,0.03)' : 'rgba(255,125,178,0.03)'
         });
       }
     }
     window.addEventListener('resize', resize);
     resize();
 
-    // 绘制照片中的荒漠地貌与营火、小人逆光细节
     function drawForeground() {
-      const bh = h - 80; 
+      const bh = isMobile ? h - 60 : h - 80; 
+      const scaleF = isMobile ? 0.65 : 1.0;
 
-      // 1. 营火橙黄色逆光漫反射
-      let fireGlow = bgCtx.createRadialGradient(w*0.51, bh - 8, 0, w*0.51, bh - 8, 180);
-      fireGlow.addColorStop(0, 'rgba(255, 110, 30, 0.5)');
-      fireGlow.addColorStop(0.3, 'rgba(255, 80, 20, 0.18)');
+      let fireGlow = bgCtx.createRadialGradient(w*0.51, bh - 8*scaleF, 0, w*0.51, bh - 8*scaleF, 180*scaleF);
+      fireGlow.addColorStop(0, 'rgba(255, 110, 30, 0.45)');
+      fireGlow.addColorStop(0.3, 'rgba(255, 80, 20, 0.15)');
       fireGlow.addColorStop(1, 'rgba(0,0,0,0)');
       bgCtx.fillStyle = fireGlow;
       bgCtx.beginPath();
-      bgCtx.arc(w*0.51, bh - 8, 180, 0, Math.PI*2);
+      bgCtx.arc(w*0.51, bh - 8*scaleF, 180*scaleF, 0, Math.PI*2);
       bgCtx.fill();
 
-      // 2. 山体阴影与地貌
       bgCtx.fillStyle = '#01040a'; 
       bgCtx.beginPath();
       bgCtx.moveTo(0, h);
       bgCtx.lineTo(0, bh + 15);
       
-      bgCtx.quadraticCurveTo(w * 0.15, bh - 25, w * 0.35, bh - 5);
-      bgCtx.lineTo(w * 0.46, bh - 5);
+      bgCtx.quadraticCurveTo(w * 0.15, bh - 25*scaleF, w * 0.35, bh - 5*scaleF);
+      bgCtx.lineTo(w * 0.46, bh - 5*scaleF);
       
-      bgCtx.lineTo(w * 0.475, bh - 5);
-      bgCtx.lineTo(w * 0.48, bh - 90);
-      bgCtx.quadraticCurveTo(w * 0.485, bh - 115, w * 0.495, bh - 115); 
-      bgCtx.lineTo(w * 0.508, bh - 120); 
-      bgCtx.quadraticCurveTo(w * 0.525, bh - 110, w * 0.528, bh - 85); 
-      bgCtx.lineTo(w * 0.53, bh - 5); 
+      bgCtx.lineTo(w * 0.475, bh - 5*scaleF);
+      bgCtx.lineTo(w * 0.48, bh - 90*scaleF);
+      bgCtx.quadraticCurveTo(w * 0.485, bh - 115*scaleF, w * 0.495, bh - 115*scaleF); 
+      bgCtx.lineTo(w * 0.508, bh - 120*scaleF); 
+      bgCtx.quadraticCurveTo(w * 0.525, bh - 110*scaleF, w * 0.528, bh - 85*scaleF); 
+      bgCtx.lineTo(w * 0.53, bh - 5*scaleF); 
       
-      bgCtx.lineTo(w * 0.65, bh - 5);
-      bgCtx.quadraticCurveTo(w * 0.8, bh - 20, w, bh + 10);
+      bgCtx.lineTo(w * 0.65, bh - 5*scaleF);
+      bgCtx.quadraticCurveTo(w * 0.8, bh - 20*scaleF, w, bh + 10);
       bgCtx.lineTo(w, h);
       bgCtx.closePath();
       bgCtx.fill();
 
-      // 3. 绘制岩壁和地面上橙黄色的反射亮边
       bgCtx.strokeStyle = 'rgba(255, 120, 30, 0.35)';
-      bgCtx.lineWidth = 1.8;
+      bgCtx.lineWidth = 1.5;
       bgCtx.beginPath();
-      bgCtx.moveTo(w * 0.478, bh - 5);
-      bgCtx.lineTo(w * 0.482, bh - 60);
-      bgCtx.moveTo(w * 0.528, bh - 5);
-      bgCtx.lineTo(w * 0.524, bh - 55);
+      bgCtx.moveTo(w * 0.478, bh - 5*scaleF);
+      bgCtx.lineTo(w * 0.482, bh - 60*scaleF);
+      bgCtx.moveTo(w * 0.528, bh - 5*scaleF);
+      bgCtx.lineTo(w * 0.524, bh - 55*scaleF);
       bgCtx.stroke();
 
-      // 4. 营火白炽光斑核心
       bgCtx.fillStyle = '#ffffff';
       bgCtx.beginPath();
-      bgCtx.arc(w * 0.51, bh - 5, 2.5, 0, Math.PI*2);
+      bgCtx.arc(w * 0.51, bh - 5*scaleF, 2.0, 0, Math.PI*2);
       bgCtx.fill();
 
-      // 5. 营火旁的小人剪影
       bgCtx.fillStyle = '#000000';
       bgCtx.beginPath();
-      bgCtx.arc(w * 0.518, bh - 14, 2, 0, Math.PI*2); 
+      bgCtx.arc(w * 0.518, bh - 14*scaleF, 1.8, 0, Math.PI*2); 
       bgCtx.fill();
-      bgCtx.fillRect(w * 0.517, bh - 12, 2, 9); 
+      bgCtx.fillRect(w * 0.517, bh - 12*scaleF, 1.8, 9*scaleF); 
       bgCtx.strokeStyle = '#000000';
-      bgCtx.lineWidth = 0.8;
+      bgCtx.lineWidth = 0.7;
       bgCtx.beginPath(); 
-      bgCtx.moveTo(w * 0.517, bh - 3); bgCtx.lineTo(w * 0.516, bh);
-      bgCtx.moveTo(w * 0.519, bh - 3); bgCtx.lineTo(w * 0.52, bh);
+      bgCtx.moveTo(w * 0.517, bh - 3*scaleF); bgCtx.lineTo(w * 0.516, bh);
+      bgCtx.moveTo(w * 0.519, bh - 3*scaleF); bgCtx.lineTo(w * 0.52, bh);
       bgCtx.stroke();
     }
 
-    // 绘制高清星空与流星背景
     function drawBg() {
       bgCtx.clearRect(0,0,w,h);
       
-      // 1. 科技感弱化网格
-      bgCtx.strokeStyle = 'rgba(57, 197, 187, 0.01)';
-      bgCtx.lineWidth = 1;
-      for(let i=0; i<w; i+=60) { bgCtx.beginPath(); bgCtx.moveTo(i, 0); bgCtx.lineTo(i, h); bgCtx.stroke(); }
-      for(let i=0; i<h; i+=60) { bgCtx.beginPath(); bgCtx.moveTo(0, i); bgCtx.lineTo(w, i); bgCtx.stroke(); }
+      bgCtx.strokeStyle = 'rgba(57, 197, 187, 0.008)';
+      bgCtx.lineWidth = 0.5;
+      const gridStep = isMobile ? 80 : 60;
+      for(let i=0; i<w; i+=gridStep) { bgCtx.beginPath(); bgCtx.moveTo(i, 0); bgCtx.lineTo(i, h); bgCtx.stroke(); }
+      for(let i=0; i<h; i+=gridStep) { bgCtx.beginPath(); bgCtx.moveTo(0, i); bgCtx.lineTo(w, i); bgCtx.stroke(); }
 
-      // 2. 绘制银河拱桥星云
       bgNebulas.forEach(n => {
         n.x += n.vx; n.y += n.vy;
         if(n.x - n.r > w || n.x + n.r < 0) n.vx = -n.vx;
         if(n.y - n.r > h || n.y + n.r < 0) n.vy = -n.vy;
         
-        let grad = bgCtx.createRadialGradient(n.x, n.y, 0, n.x, n.y, n.r);
-        grad.addColorStop(0, n.c);
-        grad.addColorStop(0.35, n.c.replace('0.18', '0.07').replace('0.15', '0.05').replace('0.13', '0.04').replace('0.09', '0.02'));
-        grad.addColorStop(1, 'rgba(0,0,0,0)');
-        bgCtx.fillStyle = grad;
+        let fillGrad = bgCtx.createRadialGradient(n.x, n.y, 0, n.x, n.y, n.r);
+        fillGrad.addColorStop(0, n.c);
+        fillGrad.addColorStop(0.35, n.c.replace('0.24', '0.1').replace('0.2', '0.08').replace('0.18', '0.06').replace('0.13', '0.04'));
+        fillGrad.addColorStop(1, 'rgba(0,0,0,0)');
+        bgCtx.fillStyle = fillGrad;
         bgCtx.beginPath(); bgCtx.arc(n.x, n.y, n.r, 0, Math.PI*2); bgCtx.fill();
       });
 
-      // 3. 绘制星空引力网连线
-      bgCtx.lineWidth = 0.5;
-      for(let i=0; i<bgStars.length; i++) {
-        for(let j=i+1; j<bgStars.length; j++) {
-          let s1 = bgStars[i];
-          let s2 = bgStars[j];
-          let dist = Math.hypot(s1.x - s2.x, s1.y - s2.y);
-          if(dist < 46) {
-            let lineAlpha = (1 - dist/46) * 0.08 * Math.min(s1.alpha, s2.alpha);
-            bgCtx.strokeStyle = `rgba(57, 197, 187, ${lineAlpha})`;
-            bgCtx.beginPath();
-            bgCtx.moveTo(s1.x, s1.y);
-            bgCtx.lineTo(s2.x, s2.y);
-            bgCtx.stroke();
+      if(!isMobile) {
+        bgCtx.lineWidth = 0.4;
+        for(let i=0; i<bgStars.length; i+=3) {
+          for(let j=i+1; j<bgStars.length; j+=6) {
+            let s1 = bgStars[i];
+            let s2 = bgStars[j];
+            let dist = Math.hypot(s1.x - s2.x, s1.y - s2.y);
+            if(dist < 46) {
+              let lineAlpha = (1 - dist/46) * 0.08 * Math.min(s1.alpha, s2.alpha);
+              bgCtx.strokeStyle = `rgba(57, 197, 187, ${lineAlpha})`;
+              bgCtx.beginPath();
+              bgCtx.moveTo(s1.x, s1.y);
+              bgCtx.lineTo(s2.x, s2.y);
+              bgCtx.stroke();
+            }
           }
         }
       }
 
-      // 4. 绘制所有高聚拢星子
       bgStars.forEach(s => {
         s.alpha += s.speed;
         if(s.alpha > 1 || s.alpha < 0) s.speed = -s.speed;
         
         bgCtx.fillStyle = s.color;
-        bgCtx.globalAlpha = Math.max(0.18, s.alpha * 0.7);
+        bgCtx.globalAlpha = Math.max(0.3, s.alpha * 0.85);
         bgCtx.beginPath(); 
         bgCtx.arc(s.x, s.y, s.size, 0, Math.PI*2); 
         bgCtx.fill();
 
         if(s.type === 'flare' && s.alpha > 0.4) {
           bgCtx.strokeStyle = s.color;
-          bgCtx.globalAlpha = (s.alpha - 0.4) * 0.4;
+          bgCtx.globalAlpha = (s.alpha - 0.4) * 0.45;
           bgCtx.lineWidth = 0.8;
           bgCtx.beginPath();
-          bgCtx.moveTo(s.x - 7, s.y); bgCtx.lineTo(s.x + 7, s.y);
-          bgCtx.moveTo(s.x, s.y - 7); bgCtx.lineTo(s.x, s.y + 7);
+          bgCtx.moveTo(s.x - 9, s.y); bgCtx.lineTo(s.x + 9, s.y);
+          bgCtx.moveTo(s.x, s.y - 9); bgCtx.lineTo(s.x, s.y + 9);
           bgCtx.stroke();
         }
       });
       bgCtx.globalAlpha = 1;
 
-      // 5. 绘制广角曲线滑落流星
       bgMeteors.forEach(m => {
         m.angle += m.angularSpeed;
 
@@ -465,7 +534,6 @@
         bgCtx.stroke();
       });
 
-      // 6. 绘制慢速宇宙光斑
       bgBubbles.forEach(b => {
         b.y -= b.vy;
         if(b.y < -b.r) { b.y = h + b.r; b.x = Math.random()*w; }
@@ -476,7 +544,6 @@
         bgCtx.beginPath(); bgCtx.arc(b.x, b.y, b.r, 0, Math.PI*2); bgCtx.fill();
       });
 
-      // 7. 绘制音符与01浮尘
       bgParticles.forEach(n => {
         n.y += n.vy;
         if(n.y > h+20) n.y = -20;
@@ -510,30 +577,55 @@
 
     function popups() {
       let count = 0;
-      const targetCount = 250; 
+      const targetCount = isMobile ? 300 : 600; 
       const styleTypes = ['', ' pink', ' gold'];
 
       let timer = setInterval(()=>{
-        const p = document.createElement('div');
-        const st = styleTypes[Math.floor(Math.random() * styleTypes.length)];
-        p.className = 'popup' + st;
-        p.innerText = msgs[count % msgs.length];
+        const spawnPerTick = isMobile ? 2 : 3;
+        for(let k = 0; k < spawnPerTick; k++) {
+          if (count >= targetCount) break;
+
+          const p = document.createElement('div');
+          const st = styleTypes[Math.floor(Math.random() * styleTypes.length)];
+          p.className = 'popup' + st;
+          p.innerText = msgs[count % msgs.length];
+          
+          let left = -5 + Math.random() * 105;
+          let top = 1 + Math.random() * 88;
+          
+          if (left > 20 && left < 80 && top > 28 && top < 72) {
+            if (Math.random() > 0.5) {
+              left = Math.random() > 0.5 ? Math.random() * 18 : 82 + Math.random() * 18;
+            } else {
+              top = Math.random() > 0.5 ? Math.random() * 25 : 75 + Math.random() * 13;
+            }
+          }
+          
+          p.style.left = left + '%';
+          p.style.top = top + '%'; 
+          
+          document.getElementById('popupLayer').appendChild(p);
+          requestAnimationFrame(() => p.classList.add('show'));
+
+          setTimeout(() => {
+            p.classList.add('hide');
+            setTimeout(() => { p.remove(); }, 400);
+          }, 1400 + Math.random() * 600);
+          
+          count++;
+        }
         
-        p.style.left = (-5 + Math.random() * 95) + '%';
-        p.style.top = (1 + Math.random() * 94) + '%';
-        
-        document.getElementById('popupLayer').appendChild(p);
-        requestAnimationFrame(() => p.classList.add('show'));
-        
-        if(++count >= targetCount) {
+        if(count >= targetCount) {
           clearInterval(timer);
           setTimeout(() => {
-            document.querySelectorAll('.popup').forEach(el => el.classList.add('hide'));
-            setTimeout(() => { document.getElementById('popupLayer').innerHTML = ''; }, 600);
+            document.querySelectorAll('.popup').forEach(el => {
+              el.classList.add('hide');
+              setTimeout(() => el.remove(), 400);
+            });
             startContinuousFireworks();
-          }, 2400); 
+          }, 2200); 
         }
-      }, 25); 
+      }, isMobile ? 15 : 10); 
     }
 
     function decodeText(el) {
@@ -549,26 +641,27 @@
     function startContinuousFireworks() {
       requestAnimationFrame(animateFx);
       
-      for(let i=0; i<15; i++) {
-        setTimeout(()=> spawnRocket(), Math.random()*1000);
+      const initRockets = isMobile ? 12 : 25;
+      for(let i=0; i<initRockets; i++) {
+        setTimeout(()=> spawnRocket(), Math.random()*1200);
       }
 
       setInterval(() => {
-        let burstCount = Math.floor(Math.random() * 2) + 1; 
+        let burstCount = isMobile ? (Math.random() > 0.5 ? 2 : 1) : Math.floor(Math.random() * 2) + 2; 
         for(let i=0; i<burstCount; i++) {
           spawnRocket();
         }
         
-        if(Math.random() > 0.4) {
+        if(Math.random() > (isMobile ? 0.55 : 0.3)) {
           spawnTrackingRocket(); 
         }
 
-        if(Math.random() > 0.6) {
+        if(Math.random() > 0.45) {
           setTimeout(() => {
-            explode(Math.random()*w, Math.random()*h*0.7, colors[Math.floor(Math.random()*colors.length)], true);
+            explode(Math.random()*w, Math.random()*h*0.65, colors[Math.floor(Math.random()*colors.length)], true);
           }, Math.random()*100);
         }
-      }, 220);
+      }, isMobile ? 220 : 130); 
 
       setTimeout(() => {
         document.getElementById('textMask').classList.add('active');
@@ -589,7 +682,7 @@
     function spawnRocket() {
       rockets.push({ 
         x: Math.random()*w, y: h + 10, 
-        tx: Math.random()*w, ty: h*0.06 + Math.random()*h*0.46, 
+        tx: Math.random()*w, ty: h*0.06 + Math.random()*h*0.4, 
         vx: 0, vy: -(4.5 + Math.random()*3.5), 
         c: colors[Math.floor(Math.random()*colors.length)],
         history: []
@@ -605,8 +698,8 @@
       else if(edge === 2) { startX = -10; startY = Math.random()*h; }
       else { startX = w + 10; startY = Math.random()*h; }
 
-      let targetX = w/2 + (Math.random() > 0.5 ? 1 : -1) * (120 + Math.random()*150);
-      let targetY = h/2 + (Math.random() > 0.5 ? 1 : -1) * (100 + Math.random()*120);
+      let targetX = w/2 + (Math.random() > 0.5 ? 1 : -1) * (60 + Math.random()*120);
+      let targetY = h/2 + (Math.random() > 0.5 ? 1 : -1) * (80 + Math.random()*100);
 
       const angle = Math.atan2(targetY - startY, targetX - startX);
       const speed = 5.5 + Math.random()*3.5;
@@ -643,7 +736,7 @@
         r.x += r.vx; r.y += r.vy;
         
         r.history.push({x: r.x, y: r.y});
-        if(r.history.length > 8) r.history.shift();
+        if(r.history.length > 5) r.history.shift();
 
         fxCtx.beginPath();
         fxCtx.moveTo(r.history[0].x, r.history[0].y);
@@ -651,7 +744,7 @@
           fxCtx.lineTo(r.history[j].x, r.history[j].y);
         }
         fxCtx.strokeStyle = r.c;
-        fxCtx.lineWidth = 1.5;
+        fxCtx.lineWidth = 1.6; 
         fxCtx.stroke();
         
         let dist = Math.hypot(r.tx - r.x, r.ty - r.y);
@@ -661,7 +754,8 @@
         }
       }
       
-      if (particles.length > 1200) particles.splice(0, particles.length - 1200);
+      const maxPartCount = isMobile ? 600 : 1600; 
+      if (particles.length > maxPartCount) particles.splice(0, particles.length - maxPartCount);
 
       for(let i=particles.length-1; i>=0; i--){
         let p = particles[i];
@@ -673,12 +767,19 @@
         if(p.life <= 0) particles.splice(i, 1);
         else { 
           fxCtx.fillStyle = p.c; 
-          fxCtx.globalAlpha = Math.min(p.life/70, 0.9);
+          fxCtx.globalAlpha = Math.min(p.life/70, 0.95);
           fxCtx.beginPath(); 
-          fxCtx.arc(p.x, p.y, p.size, 0, Math.PI*2); 
+          fxCtx.arc(p.x, p.y, p.size * 1.5, 0, Math.PI*2); 
           fxCtx.fill(); 
+
+          fxCtx.fillStyle = '#ffffff';
+          fxCtx.globalAlpha = Math.min(p.life/70, 0.9);
+          fxCtx.beginPath();
+          fxCtx.arc(p.x, p.y, p.size * 0.5, 0, Math.PI*2);
+          fxCtx.fill();
         }
       }
+      fxCtx.globalAlpha = 1;
       
       fxCtx.textAlign = "center";
       fxCtx.textBaseline = "middle";
@@ -693,10 +794,12 @@
           textFxs.splice(i, 1);
         } else {
           fxCtx.globalAlpha = Math.min(tf.life, 0.85);
-          fxCtx.font = `bold ${16 * tf.scale}px "PingFang SC","Microsoft YaHei", sans-serif`;
+          fxCtx.font = `bold ${isMobile ? 12 : 16 * tf.scale}px sans-serif`;
           
-          fxCtx.shadowColor = tf.c;
-          fxCtx.shadowBlur = 10;
+          if(!isMobile) {
+            fxCtx.shadowColor = tf.c;
+            fxCtx.shadowBlur = 8;
+          }
           fxCtx.fillStyle = "rgba(255,255,255,0.95)";
           fxCtx.fillText(tf.text, tf.x, tf.y);
           fxCtx.shadowBlur = 0; 
@@ -708,31 +811,35 @@
     }
 
     function explode(x, y, c, isAmbient = false) {
-      flashes.push({x, y, c, life: 1.0, r: isAmbient ? 50 : 140});
+      flashes.push({x, y, c, life: 1.0, r: isAmbient ? (isMobile ? 30 : 50) : (isMobile ? 90 : 140)});
 
       const type = Math.floor(Math.random() * 5); 
-      const pCount = isAmbient ? (14 + Math.random()*10) : (45 + Math.random()*25);
+      
+      const pCount = isAmbient ? 
+                     (isMobile ? 8 : 14) : 
+                     (isMobile ? 22 : 48);
+
       const baseFrict = isAmbient ? 0.985 : 0.965;
 
       for(let i=0; i<pCount; i++) {
-        let vx, vy, grav = 0.015, size = 1.0 + Math.random()*1.0;
+        let vx, vy, grav = 0.015, size = 1.0 + Math.random()*1.0; 
         let ang = (Math.PI * 2 / pCount) * i;
         
-        let speed = isAmbient ? (Math.random()*2.5 + 1.0) : (Math.random()*5.0 + 2.0); 
+        let speed = isAmbient ? (Math.random()*2.0 + 0.8) : (Math.random()*4.0 + 1.8); 
 
         if (type === 0) { 
           vx = Math.cos(ang) * speed; vy = Math.sin(ang) * speed;
         } else if (type === 1) { 
           const t = ang;
-          let scale = isAmbient ? 0.12 : 0.19; 
+          let scale = isAmbient ? 0.1 : 0.17; 
           vx = scale * (16 * Math.pow(Math.sin(t), 3));
           vy = -scale * (13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t));
           vx *= (Math.random()*0.3 + 0.85); vy *= (Math.random()*0.3 + 0.85);
         } else if (type === 2) { 
-          const speedRing = isAmbient ? (i % 2 === 0 ? 2.5 : 1.2) : ((i % 2 === 0) ? 5.2 : 2.5);
+          const speedRing = isAmbient ? (i % 2 === 0 ? 2.0 : 1.0) : ((i % 2 === 0) ? 4.5 : 2.0);
           vx = Math.cos(ang) * speedRing; vy = Math.sin(ang) * speedRing;
         } else if (type === 3) { 
-          let range = isAmbient ? (Math.random()*1.8 + 0.6) : (Math.random()*3.2 + 1.2);
+          let range = isAmbient ? (Math.random()*1.5 + 0.5) : (Math.random()*2.8 + 1.0);
           vx = Math.cos(ang) * range;
           vy = Math.sin(ang) * range;
           grav = 0.06; 
@@ -744,20 +851,20 @@
         particles.push({ 
           x, y, c: Math.random()>0.85 ? '#ffffff' : c, 
           vx, vy, grav, frict: baseFrict, size,
-          life: isAmbient ? (50 + Math.random()*30) : (80 + Math.random()*40) 
+          life: isAmbient ? (40 + Math.random()*20) : (70 + Math.random()*30) 
         });
       }
       
-      if(Math.random() < 0.3) {
+      if(Math.random() < 0.25) {
         let rawWord = msgs[Math.floor(Math.random() * msgs.length)].replace(/[^\u4e00-\u9fa5a-zA-Z]/g, '');
         
         let rx, ry;
         if(Math.random() > 0.5) {
-          rx = 60 + Math.random() * (w/2 - 180);
+          rx = 40 + Math.random() * (w/2 - 120);
         } else {
-          rx = w/2 + 120 + Math.random() * (w/2 - 180);
+          rx = w/2 + 80 + Math.random() * (w/2 - 120);
         }
-        ry = 80 + Math.random() * (h - 200);
+        ry = 80 + Math.random() * (h - 180);
 
         textFxs.push({
           x: rx, 
@@ -765,7 +872,7 @@
           text: rawWord,
           c: colors[Math.floor(Math.random() * colors.length)],
           scale: 0.65 + Math.random() * 0.35, 
-          life: 1.5 + Math.random() * 0.5, 
+          life: 1.2 + Math.random() * 0.4, 
           vx: (Math.random() - 0.5) * 0.4, 
           vy: -0.15 - Math.random() * 0.35  
         });
