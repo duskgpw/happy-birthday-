@@ -43,7 +43,7 @@
   .cake::after{content:'🎂';font-size:clamp(50px, 12vw, 70px);filter:drop-shadow(0 0 8px rgba(57,197,187,0.4));}
   .tip{position:relative;z-index:10;margin-top:20px;font-size:clamp(11px, 3vw, 13px);color:#b8fff8;letter-spacing:2px;animation:breathe 2.5s ease-in-out infinite;}
 
-  /* 满铺弹窗 */
+  /* 满铺弹窗 - 开启GPU加速，优化渲染流畅度 */
   #popupLayer{position:absolute;inset:0;z-index:20;pointer-events:none;}
   .popup{
     position:absolute;
@@ -57,7 +57,9 @@
     box-shadow:0 0 12px rgba(57,197,187,0.45);
     transform:scale(0);
     opacity:0;
-    transition:all .4s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+    /* 仅对transform和opacity做过渡，启用GPU硬件加速，极大优化手机滑动帧率 */
+    transition: transform .4s cubic-bezier(0.18, 0.89, 0.32, 1.28), opacity .4s ease;
+    will-change: transform, opacity;
     white-space:nowrap;
     backdrop-filter: blur(1.5px);
   }
@@ -65,6 +67,18 @@
   .popup.gold{border-color:#ffe600;box-shadow:0 0 12px rgba(255,230,0,0.5);color:#ffe600;}
   .popup.show{transform:scale(1);opacity:1}
   .popup.hide{transform:scale(0.5);opacity:0;}
+
+  /* 手机端专用样式重写：关掉高能耗的backdrop-filter与过大阴影以保证 60Hz+ */
+  @media (max-width: 767px) {
+    .popup {
+      box-shadow: 0 0 6px rgba(57,197,187,0.4);
+      border-width: 1px;
+      backdrop-filter: none; /* 关掉移动端毛玻璃以获得满帧率 */
+      background: rgba(4, 12, 18, 0.98); /* 略微加深背景色保持文字清晰度 */
+    }
+    .popup.pink { box-shadow: 0 0 6px rgba(255,125,178,0.4); }
+    .popup.gold { box-shadow: 0 0 6px rgba(255,230,0,0.4); }
+  }
 
   /* 核心文字层 */
   #textLayer{position:absolute;inset:0;display:flex;justify-content:center;align-items:center;z-index:30;pointer-events:none;text-align:center;}
@@ -84,7 +98,7 @@
   .subwish{margin-top:12px;font-size:clamp(13px, 3.5vw, 19px);color:#ccfffb;text-shadow:0 0 8px rgba(57,197,187,0.5);font-family:monospace;}
   .cursor::after{content:'_';animation:blink 1s step-end infinite;color:#39c5bb;}
 
-  /* 音乐控制按钮重构 - 适配初音未来黑胶转盘 */
+  /* 音乐控制按钮 - 适配初音未来黑胶转盘 */
   #musicBtn{
     position:absolute;
     right:16px;
@@ -108,7 +122,7 @@
     overflow:visible;
   }
   .spinning-part {
-    transform-origin: 30px 38px; /* 围绕黑胶中心旋转 */
+    transform-origin: 30px 38px; 
     transition: transform 0.5s ease;
   }
   #musicBtn.playing .spinning-part {
@@ -537,10 +551,10 @@
       bgBubbles.forEach(b => {
         b.y -= b.vy;
         if(b.y < -b.r) { b.y = h + b.r; b.x = Math.random()*w; }
-        let grad = bgCtx.createRadialGradient(b.x, b.y, 0, b.x, b.y, b.r);
-        grad.addColorStop(0, b.color);
-        grad.addColorStop(1, 'rgba(0,0,0,0)');
-        bgCtx.fillStyle = grad;
+        let fillGrad = bgCtx.createRadialGradient(b.x, b.y, 0, b.x, b.y, b.r);
+        fillGrad.addColorStop(0, b.color);
+        fillGrad.addColorStop(1, 'rgba(0,0,0,0)');
+        bgCtx.fillStyle = fillGrad;
         bgCtx.beginPath(); bgCtx.arc(b.x, b.y, b.r, 0, Math.PI*2); bgCtx.fill();
       });
 
@@ -590,14 +604,32 @@
           p.className = 'popup' + st;
           p.innerText = msgs[count % msgs.length];
           
-          let left = -5 + Math.random() * 105;
-          let top = 1 + Math.random() * 88;
+          let left, top;
           
-          if (left > 20 && left < 80 && top > 28 && top < 72) {
-            if (Math.random() > 0.5) {
-              left = Math.random() > 0.5 ? Math.random() * 18 : 82 + Math.random() * 18;
-            } else {
-              top = Math.random() > 0.5 ? Math.random() * 25 : 75 + Math.random() * 13;
+          if(isMobile) {
+            // 手机端边界智能限制：横向控制在 [3%, 75%] 之间，防折行和溢出
+            left = 3 + Math.random() * 72;
+            top = 5 + Math.random() * 80;
+            
+            // 手机端文字是纵向的，高度跨度更大，优化垂直避让区间为 [25%, 75%]
+            if (left > 12 && left < 80 && top > 25 && top < 75) {
+              if (Math.random() > 0.5) {
+                left = Math.random() > 0.5 ? Math.random() * 12 : 80 + Math.random() * 12;
+              } else {
+                top = Math.random() > 0.5 ? Math.random() * 20 : 75 + Math.random() * 10;
+              }
+            }
+          } else {
+            // 电脑端边界限制
+            left = -5 + Math.random() * 105;
+            top = 1 + Math.random() * 88;
+            
+            if (left > 20 && left < 80 && top > 28 && top < 72) {
+              if (Math.random() > 0.5) {
+                left = Math.random() > 0.5 ? Math.random() * 18 : 82 + Math.random() * 18;
+              } else {
+                top = Math.random() > 0.5 ? Math.random() * 25 : 75 + Math.random() * 13;
+              }
             }
           }
           
@@ -605,7 +637,9 @@
           p.style.top = top + '%'; 
           
           document.getElementById('popupLayer').appendChild(p);
-          requestAnimationFrame(() => p.classList.add('show'));
+          
+          // 使用 setTimeout 代替直接 requestAnimationFrame 以防局部帧阻塞
+          setTimeout(() => p.classList.add('show'), 10);
 
           setTimeout(() => {
             p.classList.add('hide');
