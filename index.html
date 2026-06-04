@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>送给白若浠的生日惊喜</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  /* 更加深邃浓郁的初音宇宙星河渐变 */
+  body{
+    width:100vw;
+    height:100vh;
+    overflow:hidden;
+    background: radial-gradient(circle at 50% 50%, #031b20 0%, #060a17 60%, #010307 100%);
+    font-family:"PingFang SC","Microsoft YaHei",sans-serif;
+    user-select:none;
+    -webkit-tap-highlight-color:transparent;
+  }
+  canvas{position:absolute;inset:0;pointer-events:none;}
+  #bgCanvas{z-index:1} #fxCanvas{z-index:25}
+  
+  /* 柔和的边缘暗角，突出中央 */
+  body::after {
+    content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 99;
+    box-shadow: inset 0 0 120px rgba(0,0,0,0.9);
+  }
+
+  .scanline{position:absolute;inset:0;z-index:5;background:linear-gradient(to bottom, transparent 50%, rgba(57,197,187,0.02) 51%, transparent 100%);background-size:100% 4px;pointer-events:none;}
+
+  /* 初始UI */
+  #startScreen{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:10;transition:opacity 0.8s ease;cursor:pointer;}
+  .miku-01{position:absolute;top:-10px;left:0px;font-size:180px;font-weight:900;font-style:italic;color:rgba(57,197,187,0.04);z-index:0;pointer-events:none;}
+  .mikuLogo{position:relative;z-index:10;font-size:20px;font-weight:800;letter-spacing:3px;color:#39c5bb;text-shadow:0 0 8px #39c5bb;animation:breathe 3s ease-in-out infinite;margin-bottom:20px;}
+  .cakeWrap{position:relative;width:240px;height:240px;display:flex;align-items:center;justify-content:center;z-index:10;}
+  .radar{position:absolute;width:200px;height:200px;border:1px dashed rgba(57,197,187,0.3);border-radius:50%;animation:spin 18s linear infinite;}
+  .cake{position:relative;width:120px;height:120px;animation:floaty 4.5s ease-in-out infinite;}
+  .cake::after{content:'🎂';font-size:70px;position:absolute;top:20px;left:25px;filter:drop-shadow(0 0 8px rgba(57,197,187,0.4));}
+  .tip{position:relative;z-index:10;margin-top:20px;font-size:13px;color:#b8fff8;letter-spacing:2px;animation:breathe 2.5s ease-in-out infinite;}
+
+  /* 满铺弹窗 */
+  #popupLayer{position:absolute;inset:0;z-index:20;pointer-events:none;}
+  .popup{position:absolute;padding:8px 14px;font-size:12px;font-weight:700;color:#fff;background:rgba(6,18,26,.95);border:1px solid rgba(57,197,187,0.6);border-radius:8px;box-shadow:0 0 10px rgba(57,197,187,.2);transform:scale(0);opacity:0;transition:all .5s cubic-bezier(0.18, 0.89, 0.32, 1.28);white-space:nowrap;}
+  .popup.pink{border-color:rgba(255,125,178,0.6);box-shadow:0 0 10px rgba(255,125,178,.2);}
+  .popup.gold{border-color:rgba(255,230,0,0.6);box-shadow:0 0 10px rgba(255,230,0,.2);color:#ffe600;}
+  .popup.show{transform:scale(1);opacity:1}
+  .popup.hide{transform:scale(0.5);opacity:0;}
+
+  /* 核心文字层 - 增强对比度，突出主体 */
+  #textLayer{position:absolute;inset:0;display:flex;justify-content:center;align-items:center;z-index:30;pointer-events:none;text-align:center;}
+  
+  /* 中央暗化遮罩，当显示文字时，压暗中心背景 */
+  .text-mask {
+    position: absolute; inset: 0; 
+    background: radial-gradient(circle, rgba(2,6,15,0.92) 0%, rgba(2,6,15,0) 75%);
+    opacity: 0; transition: opacity 0.8s ease; z-index: -1;
+  }
+  .text-mask.active { opacity: 1; }
+
+  .mainText{position:absolute;width:100%;padding:0 20px;opacity:0;transform:scale(0.95);transition:all 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);}
+  .mainText.show{opacity:1;transform:scale(1);}
+  
+  .name{font-size:52px;color:#39c5bb;font-weight:900;letter-spacing:5px;margin-bottom:15px;text-shadow:0 0 20px rgba(57,197,187,0.9), 0 0 35px rgba(57,197,187,0.4);font-family:monospace;}
+  .wish{font-size:24px;color:#fff;line-height:1.6;text-shadow:0 0 12px rgba(255,125,178,0.9), 0 0 20px rgba(255,125,178,0.4);font-family:monospace;}
+  .subwish{margin-top:12px;font-size:19px;color:#ccfffb;text-shadow:0 0 8px rgba(57,197,187,0.5);font-family:monospace;}
+  .cursor::after{content:'_';animation:blink 1s step-end infinite;color:#39c5bb;}
+
+  /* 控件 */
+  #musicBtn{position:absolute;right:20px;bottom:20px;width:50px;height:50px;z-index:50;border-radius:50%;border:1px solid #39c5bb;background:rgba(8,25,36,.8);display:flex;align-items:center;justify-content:center;cursor:pointer;}
+  .disc{width:36px;height:36px;border-radius:50%;background:radial-gradient(circle, #39c5bb 15%, #0d1827 16%, #0d1827 80%, #ff7db2 81%);}
+  #musicBtn.playing .disc{animation:spin 4s linear infinite}
+  #restartBtn{position:absolute;left:50%;bottom:40px;transform:translateX(-50%);z-index:40;padding:12px 28px;border-radius:30px;background:rgba(8,25,36,.85);border:1px solid #39c5bb;color:#fff;font-size:15px;font-weight:bold;cursor:pointer;display:none;letter-spacing:2px;box-shadow:0 0 20px rgba(57,197,187,.5);}
+  #restartBtn.show{display:block;}
+
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+  @keyframes breathe{0%,100%{opacity:.3}50%{opacity:0.8}}
+  @keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+  @keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+</style>
+</head>
+<body>
+  <div id="app">
+    <canvas id="bgCanvas"></canvas>
+    <canvas id="fxCanvas"></canvas>
+    <div class="scanline"></div>
+
+    <div id="startScreen" onclick="startShow()">
+      <div class="miku-01">01</div>
+      <div class="mikuLogo">SYSTEM LOADING...</div>
+      <div class="cakeWrap">
+        <div class="radar"></div>
+        <div class="cake"></div>
+      </div>
+      <div class="tip">>> 点击屏幕开启全息惊喜 <<</div>
+    </div>
+
+    <div id="popupLayer"></div>
+
+    <div id="textLayer">
+      <div class="text-mask" id="textMask"></div>
+      <div id="text1" class="mainText">
+        <div class="name" data-text="白若浠"></div>
+        <div class="wish" data-text="愿你所得皆所愿"></div>
+        <div class="subwish" data-text="所遇皆温柔，岁岁皆平安"></div>
+      </div>
+      <div id="text2" class="mainText">
+        <div class="name" style="color:#ff7db2;text-shadow:0 0 20px rgba(255,125,178,0.9)" data-text="白若浠 生日快乐"></div>
+        <div class="wish cursor" data-text="愿新的这一岁，明朗、自由、闪闪发光 ✨"></div>
+      </div>
+    </div>
+
+    <div id="musicBtn" onclick="toggleMusic(event)"><div class="disc"></div></div>
+    <button id="restartBtn" onclick="location.reload()">再看一次</button>
+    <audio id="bgm" loop src="https://music.163.com/song/media/outer/url?id=26237340.mp3"></audio>
+  </div>
+
+  <script>
+    const bgCanvas = document.getElementById('bgCanvas'), bgCtx = bgCanvas.getContext('2d');
+    const fxCanvas = document.getElementById('fxCanvas'), fxCtx = fxCanvas.getContext('2d');
+    const bgm = document.getElementById('bgm');
+    
+    let w, h, bgParticles = [], bgStars = [], bgBubbles = [], bgNebulas = [], bgMeteors = [];
+    let rockets = [], particles = [], flashes = [], textFxs = [], isStarted = false;
+    
+    const colors = ['#39c5bb', '#ff7db2', '#72efe7', '#ff9ec4', '#ffffff', '#ffd8e6', '#ffe600', '#a3e5ff'];
+    
+    // 祝福语库
+    const msgs = [
+      "🎉 祝白若浠生日快乐！", "✨ 愿你眼里有光，心中有爱", "🎂 岁岁常欢愉，年年皆胜意", "🌟 祝你新的一岁：明朗、自由",
+      "🎈 愿所有美好与你不期而遇", "💫 愿你所得皆所愿，所行化坦途", "🌸 祝最可爱的白若浠生日大吉", "🧁 保持少女心，永远热爱生活",
+      "🍀 愿你一辈子都被温柔以待", "❤️ 平安喜乐，万事胜意", "💰 祝你暴富暴美暴开心！", "🌈 愿你无忧无虑，随心所欲",
+      "☀️ 每天都要开开心心呀", "🧭 愿你走过的路，都繁花送锦", "🪐 星光不问赶路人，时光不负你", "🌻 愿你的笑容，温暖每个清晨",
+      "🍦 百事可乐，万事芬达", "💪 健康、快乐、自由、美丽！", "👑 祝白若浠永远做自己的公主", "🎁 所有的好运都奔向你",
+      "🕯️ 许个愿吧，它一定会实现的", "🎀 愿你眼里藏着太阳，笑里全是坦荡", "🍬 愿你的生活，甜度刚刚好", "🎐 听风听雨，不如听你欢笑",
+      "🧸 愿你新的一岁，闪闪发光", "🎵 愿你随心所欲，活得漂亮", "❄️ 纯净如初，热烈盛放", "🦋 愿你越飞越高，越飞越自由",
+      "🐾 岁岁平安，平安喜乐", "🥂 祝白若浠越来越有魅力！", "💌 所有的美好都送给白若浠", "🔮 愿你未来可期，精彩纷呈",
+      "🧁 愿你每一天都像过生日一样甜", "🌻 愿你知足且上进，温柔且坚定", "💫 愿你往后余生，只有欢笑没有泪水", "🍀 愿你三冬暖，愿你春不寒"
+    ];
+
+    // 精确获取拱形银河轨迹的高度 (曲线更深，从左右下角升起跨过星空)
+    function getArchY(x) {
+      const normX = x / w;
+      return h * 0.78 - Math.sin(normX * Math.PI) * (h * 0.58);
+    }
+
+    // 完美契合图片：以屏幕上方偏外为圆心，滑落优美向下弯曲的广角流星
+    function createCurvedMeteor(randomizeAngle = false) {
+      const cx = w * 0.5;                // 旋转圆心在顶部中央
+      const cy = -h * 0.4;               // 位于屏幕上方外侧
+      const minR = h * 0.65;
+      const maxR = h * 1.8;
+      const r = minR + Math.random() * (maxR - minR); 
+      
+      const isLeft = Math.random() > 0.5;
+      let startAngle;
+      
+      if(randomizeAngle) {
+        startAngle = isLeft ? (Math.PI*0.1 + Math.random()*Math.PI*0.25) : (Math.PI*0.65 + Math.random()*Math.PI*0.25);
+      } else {
+        startAngle = isLeft ? Math.PI*0.1 : Math.PI*0.9;
+      }
+      
+      const speed = 0.003 + Math.random() * 0.005;
+      const angularDir = isLeft ? speed : -speed; // 分别朝左右外侧旋转划落
+
+      // 照片中的流星色彩：极光绿、冷白、淡粉、金黄微光
+      const meteorColors = [
+        'rgba(57, 197, 187, 0.65)', 
+        'rgba(255, 255, 255, 0.85)', 
+        'rgba(255, 125, 178, 0.5)', 
+        'rgba(255, 220, 80, 0.55)'
+      ];
+
+      return {
+        cx, cy, r,
+        angle: startAngle,
+        angularSpeed: angularDir,
+        width: 0.7 + Math.random() * 1.5,
+        trailLength: 0.14 + Math.random() * 0.18, 
+        color: meteorColors[Math.floor(Math.random() * meteorColors.length)]
+      };
+    }
+
+    function resize() {
+      w = bgCanvas.width = fxCanvas.width = window.innerWidth;
+      h = bgCanvas.height = fxCanvas.height = window.innerHeight;
+      
+      bgParticles = []; bgStars = []; bgBubbles = []; bgNebulas = []; bgMeteors = [];
+      
+      // 1. 初始化多重纹理银河星云 (拼合出照片中的气态尘埃感)
+      const isMobile = w < 768;
+      const step = isMobile ? 120 : 70;
+      
+      for(let x = -100; x < w + 100; x += step) {
+        let archY = getArchY(x);
+        let randOffset = (Math.random() - 0.5) * 80;
+        
+        let col = 'rgba(57, 197, 187, 0.09)'; // 默认初音绿
+        let size = (160 + Math.random() * 150) * (isMobile ? 0.75 : 1);
+        
+        // 银河中心核(右半边)渲染为照片中的炽热粉橙色
+        if(x > w * 0.6) {
+          col = Math.random() > 0.4 ? 'rgba(255, 130, 90, 0.18)' : 'rgba(255, 90, 140, 0.15)';
+          size *= 1.3;
+        } else if(x > w * 0.35 && x <= w * 0.6) {
+          // 银河中段偏紫红
+          col = 'rgba(170, 70, 220, 0.13)';
+        }
+
+        bgNebulas.push({
+          x: x, 
+          y: archY + randOffset, 
+          r: size, 
+          vx: (Math.random() - 0.5)*0.03, 
+          vy: (Math.random() - 0.5)*0.03, 
+          c: col
+        });
+      }
+
+      // 2. 背景浮动的音符与“01”字符
+      const notes = ['♪', '♫', '♬', '01'];
+      for(let i=0; i<28; i++) {
+        bgParticles.push({
+          x: Math.random()*w, y: Math.random()*h,
+          text: notes[Math.floor(Math.random() * notes.length)],
+          s: 11 + Math.random()*9,
+          vy: 0.08 + Math.random()*0.15,
+          c: Math.random()>0.5 ? 'rgba(57,197,187,0.1)' : 'rgba(255,125,178,0.06)'
+        });
+      }
+      
+      // 3. 璀璨星空群星 (高精度，约480颗，紧密贴合在拱桥上形成明显的亮带)
+      for(let i=0; i<480; i++) {
+        let isFlare = Math.random() > 0.95;
+        let isArchStar = Math.random() > 0.18; // 82% 星星沿拱桥分布
+        
+        let starX = Math.random() * w;
+        let starY;
+        
+        if (isArchStar) {
+          // 产生偏向拱桥中心的正态分布
+          let dev = (Math.random() + Math.random() + Math.random() - 1.5) * 80;
+          starY = getArchY(starX) + dev;
+        } else {
+          starY = Math.random() * h * 0.85; // 其他散落在深空各处
+        }
+
+        bgStars.push({
+          x: starX, y: starY,
+          size: isFlare ? 1.5 + Math.random()*1.0 : 0.3 + Math.random()*1.2,
+          color: colors[Math.floor(Math.random()*colors.length)],
+          alpha: Math.random(),
+          speed: 0.004 + Math.random()*0.012,
+          type: isFlare ? 'flare' : 'normal'
+        });
+      }
+
+      // 4. 初始化广角同心流星 (共8颗)
+      for(let i=0; i<8; i++) {
+        bgMeteors.push(createCurvedMeteor(true));
+      }
+
+      // 5. 背景深空慢速虚化大光晕
+      for(let i=0; i<10; i++) {
+        bgBubbles.push({
+          x: Math.random()*w, y: h + Math.random()*100,
+          r: 20 + Math.random()*30,
+          vy: 0.12 + Math.random()*0.22,
+          color: Math.random() > 0.5 ? 'rgba(57,197,187,0.02)' : 'rgba(255,125,178,0.02)'
+        });
+      }
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    // 绘制照片中的荒漠地貌与营火、小人逆光细节
+    function drawForeground() {
+      const bh = h - 80; // 基准水平面
+
+      // 1. 营火橙黄色逆光漫反射 (渲染在地貌底下)
+      let fireGlow = bgCtx.createRadialGradient(w*0.51, bh - 8, 0, w*0.51, bh - 8, 180);
+      fireGlow.addColorStop(0, 'rgba(255, 110, 30, 0.5)');
+      fireGlow.addColorStop(0.3, 'rgba(255, 80, 20, 0.18)');
+      fireGlow.addColorStop(1, 'rgba(0,0,0,0)');
+      bgCtx.fillStyle = fireGlow;
+      bgCtx.beginPath();
+      bgCtx.arc(w*0.51, bh - 8, 180, 0, Math.PI*2);
+      bgCtx.fill();
+
+      // 2. 山体阴影与地貌 (深黑蓝灰色)
+      bgCtx.fillStyle = '#01040a'; 
+      bgCtx.beginPath();
+      bgCtx.moveTo(0, h);
+      bgCtx.lineTo(0, bh + 15);
+      
+      // 左侧山脉线条
+      bgCtx.quadraticCurveTo(w * 0.15, bh - 25, w * 0.35, bh - 5);
+      bgCtx.lineTo(w * 0.46, bh - 5);
+      
+      // 绘制雅丹中央垂直立柱岩石塔
+      bgCtx.lineTo(w * 0.475, bh - 5);
+      bgCtx.lineTo(w * 0.48, bh - 90);
+      bgCtx.quadraticCurveTo(w * 0.485, bh - 115, w * 0.495, bh - 115); // 塔左肩
+      bgCtx.lineTo(w * 0.508, bh - 120); // 塔顶
+      bgCtx.quadraticCurveTo(w * 0.525, bh - 110, w * 0.528, bh - 85); // 塔右边
+      bgCtx.lineTo(w * 0.53, bh - 5); // 回落到岩基
+      
+      // 右侧起伏山脉线条
+      bgCtx.lineTo(w * 0.65, bh - 5);
+      bgCtx.quadraticCurveTo(w * 0.8, bh - 20, w, bh + 10);
+      bgCtx.lineTo(w, h);
+      bgCtx.closePath();
+      bgCtx.fill();
+
+      // 3. 绘制岩壁和地面上橙黄色的反射亮边 (模拟营火逆光)
+      bgCtx.strokeStyle = 'rgba(255, 120, 30, 0.35)';
+      bgCtx.lineWidth = 1.8;
+      bgCtx.beginPath();
+      // 岩石立柱的左下侧反射边
+      bgCtx.moveTo(w * 0.478, bh - 5);
+      bgCtx.lineTo(w * 0.482, bh - 60);
+      // 岩石立柱的右下侧反射边
+      bgCtx.moveTo(w * 0.528, bh - 5);
+      bgCtx.lineTo(w * 0.524, bh - 55);
+      bgCtx.stroke();
+
+      // 4. 营火白炽光斑核心
+      bgCtx.fillStyle = '#ffffff';
+      bgCtx.beginPath();
+      bgCtx.arc(w * 0.51, bh - 5, 2.5, 0, Math.PI*2);
+      bgCtx.fill();
+
+      // 5. 营火旁的“看星空人影”剪影 (增加照片的意境与对比尺度)
+      bgCtx.fillStyle = '#000000';
+      bgCtx.beginPath();
+      bgCtx.arc(w * 0.518, bh - 14, 2, 0, Math.PI*2); // 头部
+      bgCtx.fill();
+      bgCtx.fillRect(w * 0.517, bh - 12, 2, 9); // 身体
+      bgCtx.strokeStyle = '#000000';
+      bgCtx.lineWidth = 0.8;
+      bgCtx.beginPath(); // 双腿
+      bgCtx.moveTo(w * 0.517, bh - 3); bgCtx.lineTo(w * 0.516, bh);
+      bgCtx.moveTo(w * 0.519, bh - 3); bgCtx.lineTo(w * 0.52, bh);
+      bgCtx.stroke();
+    }
+
+    // 绘制高清且充满氛围感的星空与流星雨
+    function drawBg() {
+      bgCtx.clearRect(0,0,w,h);
+      
+      // 1. 科技感弱化网格
+      bgCtx.strokeStyle = 'rgba(57, 197, 187, 0.01)';
+      bgCtx.lineWidth = 1;
+      for(let i=0; i<w; i+=60) { bgCtx.beginPath(); bgCtx.moveTo(i, 0); bgCtx.lineTo(i, h); bgCtx.stroke(); }
+      for(let i=0; i<h; i+=60) { bgCtx.beginPath(); bgCtx.moveTo(0, i); bgCtx.lineTo(w, i); bgCtx.stroke(); }
+
+      // 2. 绘制银河拱桥星云 (气态云团更加丰富自然)
+      bgNebulas.forEach(n => {
+        n.x += n.vx; n.y += n.vy;
+        if(n.x - n.r > w || n.x + n.r < 0) n.vx = -n.vx;
+        if(n.y - n.r > h || n.y + n.r < 0) n.vy = -n.vy;
+        
+        let grad = bgCtx.createRadialGradient(n.x, n.y, 0, n.x, n.y, n.r);
+        grad.addColorStop(0, n.c);
+        grad.addColorStop(0.35, n.c.replace('0.18', '0.07').replace('0.15', '0.05').replace('0.13', '0.04').replace('0.09', '0.02'));
+        grad.addColorStop(1, 'rgba(0,0,0,0)');
+        bgCtx.fillStyle = grad;
+        bgCtx.beginPath(); bgCtx.arc(n.x, n.y, n.r, 0, Math.PI*2); bgCtx.fill();
+      });
+
+      // 3. 绘制星空引力网连线 (Constellation)
+      bgCtx.lineWidth = 0.5;
+      for(let i=0; i<bgStars.length; i++) {
+        for(let j=i+1; j<bgStars.length; j++) {
+          let s1 = bgStars[i];
+          let s2 = bgStars[j];
+          let dist = Math.hypot(s1.x - s2.x, s1.y - s2.y);
+          if(dist < 46) {
+            let lineAlpha = (1 - dist/46) * 0.08 * Math.min(s1.alpha, s2.alpha);
+            bgCtx.strokeStyle = `rgba(57, 197, 187, ${lineAlpha})`;
+            bgCtx.beginPath();
+            bgCtx.moveTo(s1.x, s1.y);
+            bgCtx.lineTo(s2.x, s2.y);
+            bgCtx.stroke();
+          }
+        }
+      }
+
+      // 4. 绘制所有高聚拢星子
+      bgStars.forEach(s => {
+        s.alpha += s.speed;
+        if(s.alpha > 1 || s.alpha < 0) s.speed = -s.speed;
+        
+        bgCtx.fillStyle = s.color;
+        bgCtx.globalAlpha = Math.max(0.18, s.alpha * 0.7);
+        bgCtx.beginPath(); 
+        bgCtx.arc(s.x, s.y, s.size, 0, Math.PI*2); 
+        bgCtx.fill();
+
+        if(s.type === 'flare' && s.alpha > 0.4) {
+          bgCtx.strokeStyle = s.color;
+          bgCtx.globalAlpha = (s.alpha - 0.4) * 0.4;
+          bgCtx.lineWidth = 0.8;
+          bgCtx.beginPath();
+          bgCtx.moveTo(s.x - 7, s.y); bgCtx.lineTo(s.x + 7, s.y);
+          bgCtx.moveTo(s.x, s.y - 7); bgCtx.lineTo(s.x, s.y + 7);
+          bgCtx.stroke();
+        }
+      });
+      bgCtx.globalAlpha = 1;
+
+      // 5. 绘制广角曲线滑落流星
+      bgMeteors.forEach(m => {
+        m.angle += m.angularSpeed;
+
+        // 弧度滑出视角范围后重置
+        if (m.angle < 0 || m.angle > Math.PI * 1.1) {
+          Object.assign(m, createCurvedMeteor(false));
+        }
+
+        // 计算头部坐标
+        const headX = m.cx + Math.cos(m.angle) * m.r;
+        const headY = m.cy + Math.sin(m.angle) * m.r;
+
+        // 计算尾部坐标
+        const tailAngle = m.angle - m.trailLength * (m.angularSpeed > 0 ? 1 : -1);
+        const tailX = m.cx + Math.cos(tailAngle) * m.r;
+        const tailY = m.cy + Math.sin(tailAngle) * m.r;
+
+        let grad = bgCtx.createLinearGradient(headX, headY, tailX, tailY);
+        grad.addColorStop(0, m.color);
+        grad.addColorStop(1, 'rgba(0,0,0,0)');
+
+        bgCtx.strokeStyle = grad;
+        bgCtx.lineWidth = m.width;
+        bgCtx.lineCap = 'round';
+        
+        bgCtx.beginPath();
+        if(m.angularSpeed > 0) {
+          bgCtx.arc(m.cx, m.cy, m.r, tailAngle, m.angle);
+        } else {
+          bgCtx.arc(m.cx, m.cy, m.r, m.angle, tailAngle);
+        }
+        bgCtx.stroke();
+      });
+
+      // 6. 绘制慢速宇宙光斑
+      bgBubbles.forEach(b => {
+        b.y -= b.vy;
+        if(b.y < -b.r) { b.y = h + b.r; b.x = Math.random()*w; }
+        let grad = bgCtx.createRadialGradient(b.x, b.y, 0, b.x, b.y, b.r);
+        grad.addColorStop(0, b.color);
+        grad.addColorStop(1, 'rgba(0,0,0,0)');
+        bgCtx.fillStyle = grad;
+        bgCtx.beginPath(); bgCtx.arc(b.x, b.y, b.r, 0, Math.PI*2); bgCtx.fill();
+      });
+
+      // 7. 绘制音符与01浮尘
+      bgParticles.forEach(n => {
+        n.y += n.vy;
+        if(n.y > h+20) n.y = -20;
+        bgCtx.fillStyle = n.c;
+        bgCtx.font = `${n.s}px monospace`;
+        bgCtx.fillText(n.text, n.x, n.y);
+      });
+
+      // 8. 绘制雅丹地貌、岩塔、营火和看星空的小人 (盖在背景最上方)
+      drawForeground();
+
+      requestAnimationFrame(drawBg);
+    }
+    drawBg();
+
+    function startShow() {
+      if(isStarted) return;
+      isStarted = true;
+      document.getElementById('startScreen').style.opacity = '0';
+      setTimeout(()=> document.getElementById('startScreen').style.display='none', 1000);
+      bgm.currentTime = 33; 
+      bgm.play().catch(()=>{});
+      document.getElementById('musicBtn').classList.add('playing');
+      popups();
+
+      window.addEventListener('click', (e) => {
+        if(e.target.id !== 'restartBtn' && !document.getElementById('musicBtn').contains(e.target)) {
+          explode(e.clientX, e.clientY, colors[Math.floor(Math.random()*colors.length)]);
+        }
+      });
+    }
+
+    function popups() {
+      let count = 0;
+      const targetCount = 250; 
+      const styleTypes = ['', ' pink', ' gold'];
+
+      let timer = setInterval(()=>{
+        const p = document.createElement('div');
+        const st = styleTypes[Math.floor(Math.random() * styleTypes.length)];
+        p.className = 'popup' + st;
+        p.innerText = msgs[count % msgs.length];
+        
+        p.style.left = (-5 + Math.random() * 95) + '%';
+        p.style.top = (1 + Math.random() * 94) + '%';
+        
+        document.getElementById('popupLayer').appendChild(p);
+        requestAnimationFrame(() => p.classList.add('show'));
+        
+        if(++count >= targetCount) {
+          clearInterval(timer);
+          setTimeout(() => {
+            document.querySelectorAll('.popup').forEach(el => el.classList.add('hide'));
+            setTimeout(() => { document.getElementById('popupLayer').innerHTML = ''; }, 600);
+            startContinuousFireworks();
+          }, 2400); 
+        }
+      }, 25); 
+    }
+
+    function decodeText(el) {
+      let txt = Array.from(el.getAttribute('data-text'));
+      let c = '01ｦｧｨｩｪｫｬｭｮｯｱｲｳｴｵｶｷｸｹｺ';
+      let i = 0, t = setInterval(()=>{
+        el.innerText = txt.map((char, idx) => char === ' ' ? ' ' : (idx < Math.floor(i) ? char : c[Math.floor(Math.random()*c.length)])).join('');
+        if(i >= txt.length) clearInterval(t);
+        i += 0.25;
+      }, 35);
+    }
+
+    function startContinuousFireworks() {
+      requestAnimationFrame(animateFx);
+      
+      for(let i=0; i<15; i++) {
+        setTimeout(()=> spawnRocket(), Math.random()*1000);
+      }
+
+      setInterval(() => {
+        let burstCount = Math.floor(Math.random() * 2) + 1; 
+        for(let i=0; i<burstCount; i++) {
+          spawnRocket();
+        }
+        
+        if(Math.random() > 0.4) {
+          spawnTrackingRocket(); 
+        }
+
+        if(Math.random() > 0.6) {
+          setTimeout(() => {
+            explode(Math.random()*w, Math.random()*h*0.7, colors[Math.floor(Math.random()*colors.length)], true);
+          }, Math.random()*100);
+        }
+      }, 220);
+
+      setTimeout(() => {
+        document.getElementById('textMask').classList.add('active');
+        document.getElementById('text1').classList.add('show');
+        document.querySelectorAll('#text1 [data-text]').forEach(el => decodeText(el));
+      }, 1500);
+
+      setTimeout(() => {
+        document.getElementById('text1').classList.remove('show');
+        setTimeout(() => {
+          document.getElementById('text2').classList.add('show');
+          document.querySelectorAll('#text2 [data-text]').forEach(el => decodeText(el));
+          document.getElementById('restartBtn').classList.add('show');
+        }, 800);
+      }, 7000);
+    }
+
+    function spawnRocket() {
+      rockets.push({ 
+        x: Math.random()*w, y: h + 10, 
+        tx: Math.random()*w, ty: h*0.06 + Math.random()*h*0.46, 
+        vx: 0, vy: -(4.5 + Math.random()*3.5), 
+        c: colors[Math.floor(Math.random()*colors.length)],
+        history: []
+      });
+    }
+
+    function spawnTrackingRocket() {
+      const edge = Math.floor(Math.random() * 4); 
+      let startX, startY;
+      
+      if(edge === 0) { startX = Math.random()*w; startY = -10; }
+      else if(edge === 1) { startX = Math.random()*w; startY = h + 10; }
+      else if(edge === 2) { startX = -10; startY = Math.random()*h; }
+      else { startX = w + 10; startY = Math.random()*h; }
+
+      let targetX = w/2 + (Math.random() > 0.5 ? 1 : -1) * (120 + Math.random()*150);
+      let targetY = h/2 + (Math.random() > 0.5 ? 1 : -1) * (100 + Math.random()*120);
+
+      const angle = Math.atan2(targetY - startY, targetX - startX);
+      const speed = 5.5 + Math.random()*3.5;
+
+      rockets.push({ 
+        x: startX, y: startY, 
+        tx: targetX, ty: targetY, 
+        vx: Math.cos(angle)*speed, vy: Math.sin(angle)*speed, 
+        c: colors[Math.floor(Math.random()*colors.length)],
+        history: []
+      });
+    }
+
+    function animateFx() {
+      fxCtx.clearRect(0,0,w,h);
+      fxCtx.globalCompositeOperation = 'lighter';
+      
+      for(let i=flashes.length-1; i>=0; i--) {
+        let f = flashes[i];
+        f.life -= 0.05;
+        if(f.life <= 0) flashes.splice(i, 1);
+        else {
+          let grad = fxCtx.createRadialGradient(f.x, f.y, 0, f.x, f.y, f.r);
+          let rgb = f.c === '#39c5bb' ? '57,197,187' : (f.c === '#ff7db2' ? '255,125,178' : '255,230,0');
+          grad.addColorStop(0, `rgba(${rgb}, ${f.life * 0.15})`);
+          grad.addColorStop(1, `rgba(${rgb}, 0)`);
+          fxCtx.fillStyle = grad;
+          fxCtx.beginPath(); fxCtx.arc(f.x, f.y, f.r, 0, Math.PI*2); fxCtx.fill();
+        }
+      }
+
+      for(let i=rockets.length-1; i>=0; i--){
+        let r = rockets[i];
+        r.x += r.vx; r.y += r.vy;
+        
+        r.history.push({x: r.x, y: r.y});
+        if(r.history.length > 8) r.history.shift();
+
+        fxCtx.beginPath();
+        fxCtx.moveTo(r.history[0].x, r.history[0].y);
+        for(let j=1; j<r.history.length; j++) {
+          fxCtx.lineTo(r.history[j].x, r.history[j].y);
+        }
+        fxCtx.strokeStyle = r.c;
+        fxCtx.lineWidth = 1.5;
+        fxCtx.stroke();
+        
+        let dist = Math.hypot(r.tx - r.x, r.ty - r.y);
+        if(dist < 12 || r.y < -20 || r.y > h+20 || r.x < -20 || r.x > w+20) { 
+          explode(r.x, r.y, r.c); 
+          rockets.splice(i, 1); 
+        }
+      }
+      
+      if (particles.length > 1200) particles.splice(0, particles.length - 1200);
+
+      for(let i=particles.length-1; i>=0; i--){
+        let p = particles[i];
+        p.x += p.vx; p.y += p.vy; 
+        p.vx *= p.frict; p.vy *= p.frict;
+        p.vy += p.grav; 
+        p.life--;
+
+        if(p.life <= 0) particles.splice(i, 1);
+        else { 
+          fxCtx.fillStyle = p.c; 
+          fxCtx.globalAlpha = Math.min(p.life/70, 0.9);
+          fxCtx.beginPath(); 
+          fxCtx.arc(p.x, p.y, p.size, 0, Math.PI*2); 
+          fxCtx.fill(); 
+        }
+      }
+      
+      fxCtx.textAlign = "center";
+      fxCtx.textBaseline = "middle";
+      for(let i=textFxs.length-1; i>=0; i--) {
+        let tf = textFxs[i];
+        tf.life -= 0.008;
+        tf.scale += 0.003;
+        tf.x += tf.vx;
+        tf.y += tf.vy;
+
+        if(tf.life <= 0) {
+          textFxs.splice(i, 1);
+        } else {
+          fxCtx.globalAlpha = Math.min(tf.life, 0.85);
+          fxCtx.font = `bold ${16 * tf.scale}px "PingFang SC","Microsoft YaHei", sans-serif`;
+          
+          fxCtx.shadowColor = tf.c;
+          fxCtx.shadowBlur = 10;
+          fxCtx.fillStyle = "rgba(255,255,255,0.95)";
+          fxCtx.fillText(tf.text, tf.x, tf.y);
+          fxCtx.shadowBlur = 0; 
+        }
+      }
+      
+      fxCtx.globalAlpha = 1;
+      requestAnimationFrame(animateFx);
+    }
+
+    function explode(x, y, c, isAmbient = false) {
+      flashes.push({x, y, c, life: 1.0, r: isAmbient ? 50 : 140});
+
+      const type = Math.floor(Math.random() * 5); 
+      const pCount = isAmbient ? (14 + Math.random()*10) : (45 + Math.random()*25);
+      const baseFrict = isAmbient ? 0.985 : 0.965;
+
+      for(let i=0; i<pCount; i++) {
+        let vx, vy, grav = 0.015, size = 1.0 + Math.random()*1.0;
+        let ang = (Math.PI * 2 / pCount) * i;
+        
+        let speed = isAmbient ? (Math.random()*2.5 + 1.0) : (Math.random()*5.0 + 2.0); 
+
+        if (type === 0) { 
+          vx = Math.cos(ang) * speed; vy = Math.sin(ang) * speed;
+        } else if (type === 1) { 
+          const t = ang;
+          let scale = isAmbient ? 0.12 : 0.19; 
+          vx = scale * (16 * Math.pow(Math.sin(t), 3));
+          vy = -scale * (13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t));
+          vx *= (Math.random()*0.3 + 0.85); vy *= (Math.random()*0.3 + 0.85);
+        } else if (type === 2) { 
+          const speedRing = isAmbient ? (i % 2 === 0 ? 2.5 : 1.2) : ((i % 2 === 0) ? 5.2 : 2.5);
+          vx = Math.cos(ang) * speedRing; vy = Math.sin(ang) * speedRing;
+        } else if (type === 3) { 
+          let range = isAmbient ? (Math.random()*1.8 + 0.6) : (Math.random()*3.2 + 1.2);
+          vx = Math.cos(ang) * range;
+          vy = Math.sin(ang) * range;
+          grav = 0.06; 
+        } else { 
+          let r = (i / pCount) * 4.5;
+          vx = Math.cos(ang + r) * speed; vy = Math.sin(ang + r) * speed;
+        }
+
+        particles.push({ 
+          x, y, c: Math.random()>0.85 ? '#ffffff' : c, 
+          vx, vy, grav, frict: baseFrict, size,
+          life: isAmbient ? (50 + Math.random()*30) : (80 + Math.random()*40) 
+        });
+      }
+      
+      if(Math.random() < 0.3) {
+        let rawWord = msgs[Math.floor(Math.random() * msgs.length)].replace(/[^\u4e00-\u9fa5a-zA-Z]/g, '');
+        
+        let rx, ry;
+        if(Math.random() > 0.5) {
+          rx = 60 + Math.random() * (w/2 - 180);
+        } else {
+          rx = w/2 + 120 + Math.random() * (w/2 - 180);
+        }
+        ry = 80 + Math.random() * (h - 200);
+
+        textFxs.push({
+          x: rx, 
+          y: ry,
+          text: rawWord,
+          c: colors[Math.floor(Math.random() * colors.length)],
+          scale: 0.65 + Math.random() * 0.35, 
+          life: 1.5 + Math.random() * 0.5, 
+          vx: (Math.random() - 0.5) * 0.4, 
+          vy: -0.15 - Math.random() * 0.35  
+        });
+      }
+    }
+
+    function toggleMusic(e) {
+      e.stopPropagation();
+      if(bgm.paused) { bgm.play(); document.getElementById('musicBtn').classList.add('playing'); }
+      else { bgm.pause(); document.getElementById('musicBtn').classList.remove('playing'); }
+    }
+  </script>
+</body>
+</html>
