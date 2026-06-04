@@ -16,7 +16,16 @@
     user-select:none;
     -webkit-tap-highlight-color:transparent;
   }
-  canvas{position:absolute;inset:0;pointer-events:none;}
+  
+  /* 保持4K清晰度抗锯齿的画布样式 */
+  canvas{
+    position:absolute;
+    inset:0;
+    pointer-events:none;
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+    image-rendering: pixelated;
+  }
   #bgCanvas{z-index:1} #fxCanvas{z-index:25}
   
   /* 柔和的边缘暗角，突出中央 */
@@ -110,7 +119,7 @@
 
     <div id="musicBtn" onclick="toggleMusic(event)"><div class="disc"></div></div>
     <button id="restartBtn" onclick="location.reload()">再看一次</button>
-    <audio id="bgm" loop src="https://music.163.com/song/media/outer/url?id=26237340.mp3"></audio>
+    <audio id="bgm" loop src="https://music.163.com/song/media/outer/url?id=1359356908.mp3"></audio>
   </div>
 
   <script>
@@ -118,7 +127,8 @@
     const fxCanvas = document.getElementById('fxCanvas'), fxCtx = fxCanvas.getContext('2d');
     const bgm = document.getElementById('bgm');
     
-    let w, h, bgParticles = [], bgStars = [], bgBubbles = [], bgNebulas = [], bgMeteors = [];
+    let w, h, dpr = 1;
+    let bgParticles = [], bgStars = [], bgBubbles = [], bgNebulas = [], bgMeteors = [];
     let rockets = [], particles = [], flashes = [], textFxs = [], isStarted = false;
     
     const colors = ['#39c5bb', '#ff7db2', '#72efe7', '#ff9ec4', '#ffffff', '#ffd8e6', '#ffe600', '#a3e5ff'];
@@ -180,13 +190,35 @@
       };
     }
 
+    // 4K超高清视网膜重构自适应
     function resize() {
-      w = bgCanvas.width = fxCanvas.width = window.innerWidth;
-      h = bgCanvas.height = fxCanvas.height = window.innerHeight;
+      const cssW = window.innerWidth;
+      const cssH = window.innerHeight;
+      
+      // 计算设备像素比，在标准屏上强制最少采用2倍超级采样以模拟4K，高清屏上最高取3倍
+      dpr = Math.min(Math.max(window.devicePixelRatio || 1, 2), 3);
+      
+      // 设置物理像素高分辨率
+      bgCanvas.width = cssW * dpr;
+      bgCanvas.height = cssH * dpr;
+      bgCanvas.style.width = cssW + 'px';
+      bgCanvas.style.height = cssH + 'px';
+      
+      fxCanvas.width = cssW * dpr;
+      fxCanvas.height = cssH * dpr;
+      fxCanvas.style.width = cssW + 'px';
+      fxCanvas.style.height = cssH + 'px';
+      
+      w = cssW;
+      h = cssH;
+      
+      // 矩阵坐标映射转换，使所有后续的画笔操作无需修改坐标便能达到物理4K级别精细度
+      bgCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      fxCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
       
       bgParticles = []; bgStars = []; bgBubbles = []; bgNebulas = []; bgMeteors = [];
       
-      // 1. 初始化多重纹理银河星云 (拼合出照片中的气态尘埃感)
+      // 1. 初始化多重纹理银河星云
       const isMobile = w < 768;
       const step = isMobile ? 120 : 70;
       
@@ -197,12 +229,11 @@
         let col = 'rgba(57, 197, 187, 0.09)'; // 默认初音绿
         let size = (160 + Math.random() * 150) * (isMobile ? 0.75 : 1);
         
-        // 银河中心核(右半边)渲染为照片中的炽热粉橙色
+        // 银河中心核(右半边)
         if(x > w * 0.6) {
           col = Math.random() > 0.4 ? 'rgba(255, 130, 90, 0.18)' : 'rgba(255, 90, 140, 0.15)';
           size *= 1.3;
         } else if(x > w * 0.35 && x <= w * 0.6) {
-          // 银河中段偏紫红
           col = 'rgba(170, 70, 220, 0.13)';
         }
 
@@ -228,20 +259,19 @@
         });
       }
       
-      // 3. 璀璨星空群星 (高精度，约480颗，紧密贴合在拱桥上形成明显的亮带)
+      // 3. 璀璨星空群星
       for(let i=0; i<480; i++) {
         let isFlare = Math.random() > 0.95;
-        let isArchStar = Math.random() > 0.18; // 82% 星星沿拱桥分布
+        let isArchStar = Math.random() > 0.18; 
         
         let starX = Math.random() * w;
         let starY;
         
         if (isArchStar) {
-          // 产生偏向拱桥中心的正态分布
           let dev = (Math.random() + Math.random() + Math.random() - 1.5) * 80;
           starY = getArchY(starX) + dev;
         } else {
-          starY = Math.random() * h * 0.85; // 其他散落在深空各处
+          starY = Math.random() * h * 0.85; 
         }
 
         bgStars.push({
@@ -274,9 +304,9 @@
 
     // 绘制照片中的荒漠地貌与营火、小人逆光细节
     function drawForeground() {
-      const bh = h - 80; // 基准水平面
+      const bh = h - 80; 
 
-      // 1. 营火橙黄色逆光漫反射 (渲染在地貌底下)
+      // 1. 营火橙黄色逆光漫反射
       let fireGlow = bgCtx.createRadialGradient(w*0.51, bh - 8, 0, w*0.51, bh - 8, 180);
       fireGlow.addColorStop(0, 'rgba(255, 110, 30, 0.5)');
       fireGlow.addColorStop(0.3, 'rgba(255, 80, 20, 0.18)');
@@ -286,39 +316,34 @@
       bgCtx.arc(w*0.51, bh - 8, 180, 0, Math.PI*2);
       bgCtx.fill();
 
-      // 2. 山体阴影与地貌 (深黑蓝灰色)
+      // 2. 山体阴影与地貌
       bgCtx.fillStyle = '#01040a'; 
       bgCtx.beginPath();
       bgCtx.moveTo(0, h);
       bgCtx.lineTo(0, bh + 15);
       
-      // 左侧山脉线条
       bgCtx.quadraticCurveTo(w * 0.15, bh - 25, w * 0.35, bh - 5);
       bgCtx.lineTo(w * 0.46, bh - 5);
       
-      // 绘制雅丹中央垂直立柱岩石塔
       bgCtx.lineTo(w * 0.475, bh - 5);
       bgCtx.lineTo(w * 0.48, bh - 90);
-      bgCtx.quadraticCurveTo(w * 0.485, bh - 115, w * 0.495, bh - 115); // 塔左肩
-      bgCtx.lineTo(w * 0.508, bh - 120); // 塔顶
-      bgCtx.quadraticCurveTo(w * 0.525, bh - 110, w * 0.528, bh - 85); // 塔右边
-      bgCtx.lineTo(w * 0.53, bh - 5); // 回落到岩基
+      bgCtx.quadraticCurveTo(w * 0.485, bh - 115, w * 0.495, bh - 115); 
+      bgCtx.lineTo(w * 0.508, bh - 120); 
+      bgCtx.quadraticCurveTo(w * 0.525, bh - 110, w * 0.528, bh - 85); 
+      bgCtx.lineTo(w * 0.53, bh - 5); 
       
-      // 右侧起伏山脉线条
       bgCtx.lineTo(w * 0.65, bh - 5);
       bgCtx.quadraticCurveTo(w * 0.8, bh - 20, w, bh + 10);
       bgCtx.lineTo(w, h);
       bgCtx.closePath();
       bgCtx.fill();
 
-      // 3. 绘制岩壁和地面上橙黄色的反射亮边 (模拟营火逆光)
+      // 3. 绘制岩壁和地面上橙黄色的反射亮边
       bgCtx.strokeStyle = 'rgba(255, 120, 30, 0.35)';
       bgCtx.lineWidth = 1.8;
       bgCtx.beginPath();
-      // 岩石立柱的左下侧反射边
       bgCtx.moveTo(w * 0.478, bh - 5);
       bgCtx.lineTo(w * 0.482, bh - 60);
-      // 岩石立柱的右下侧反射边
       bgCtx.moveTo(w * 0.528, bh - 5);
       bgCtx.lineTo(w * 0.524, bh - 55);
       bgCtx.stroke();
@@ -329,21 +354,21 @@
       bgCtx.arc(w * 0.51, bh - 5, 2.5, 0, Math.PI*2);
       bgCtx.fill();
 
-      // 5. 营火旁的“看星空人影”剪影 (增加照片的意境与对比尺度)
+      // 5. 营火旁的小人剪影
       bgCtx.fillStyle = '#000000';
       bgCtx.beginPath();
-      bgCtx.arc(w * 0.518, bh - 14, 2, 0, Math.PI*2); // 头部
+      bgCtx.arc(w * 0.518, bh - 14, 2, 0, Math.PI*2); 
       bgCtx.fill();
-      bgCtx.fillRect(w * 0.517, bh - 12, 2, 9); // 身体
+      bgCtx.fillRect(w * 0.517, bh - 12, 2, 9); 
       bgCtx.strokeStyle = '#000000';
       bgCtx.lineWidth = 0.8;
-      bgCtx.beginPath(); // 双腿
+      bgCtx.beginPath(); 
       bgCtx.moveTo(w * 0.517, bh - 3); bgCtx.lineTo(w * 0.516, bh);
       bgCtx.moveTo(w * 0.519, bh - 3); bgCtx.lineTo(w * 0.52, bh);
       bgCtx.stroke();
     }
 
-    // 绘制高清且充满氛围感的星空与流星雨
+    // 绘制高清星空与流星背景
     function drawBg() {
       bgCtx.clearRect(0,0,w,h);
       
@@ -353,7 +378,7 @@
       for(let i=0; i<w; i+=60) { bgCtx.beginPath(); bgCtx.moveTo(i, 0); bgCtx.lineTo(i, h); bgCtx.stroke(); }
       for(let i=0; i<h; i+=60) { bgCtx.beginPath(); bgCtx.moveTo(0, i); bgCtx.lineTo(w, i); bgCtx.stroke(); }
 
-      // 2. 绘制银河拱桥星云 (气态云团更加丰富自然)
+      // 2. 绘制银河拱桥星云
       bgNebulas.forEach(n => {
         n.x += n.vx; n.y += n.vy;
         if(n.x - n.r > w || n.x + n.r < 0) n.vx = -n.vx;
@@ -367,7 +392,7 @@
         bgCtx.beginPath(); bgCtx.arc(n.x, n.y, n.r, 0, Math.PI*2); bgCtx.fill();
       });
 
-      // 3. 绘制星空引力网连线 (Constellation)
+      // 3. 绘制星空引力网连线
       bgCtx.lineWidth = 0.5;
       for(let i=0; i<bgStars.length; i++) {
         for(let j=i+1; j<bgStars.length; j++) {
@@ -412,16 +437,13 @@
       bgMeteors.forEach(m => {
         m.angle += m.angularSpeed;
 
-        // 弧度滑出视角范围后重置
         if (m.angle < 0 || m.angle > Math.PI * 1.1) {
           Object.assign(m, createCurvedMeteor(false));
         }
 
-        // 计算头部坐标
         const headX = m.cx + Math.cos(m.angle) * m.r;
         const headY = m.cy + Math.sin(m.angle) * m.r;
 
-        // 计算尾部坐标
         const tailAngle = m.angle - m.trailLength * (m.angularSpeed > 0 ? 1 : -1);
         const tailX = m.cx + Math.cos(tailAngle) * m.r;
         const tailY = m.cy + Math.sin(tailAngle) * m.r;
@@ -463,7 +485,6 @@
         bgCtx.fillText(n.text, n.x, n.y);
       });
 
-      // 8. 绘制雅丹地貌、岩塔、营火和看星空的小人 (盖在背景最上方)
       drawForeground();
 
       requestAnimationFrame(drawBg);
@@ -475,7 +496,7 @@
       isStarted = true;
       document.getElementById('startScreen').style.opacity = '0';
       setTimeout(()=> document.getElementById('startScreen').style.display='none', 1000);
-      bgm.currentTime = 33; 
+      bgm.currentTime = 0; 
       bgm.play().catch(()=>{});
       document.getElementById('musicBtn').classList.add('playing');
       popups();
